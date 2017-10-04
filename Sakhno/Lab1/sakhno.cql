@@ -1,4 +1,16 @@
-//Books are buing by Users
+//Task:
+//1. Create keyspace sakhno with replication_factor equal to 1.
+//2. Change replication factor to 2.
+//3. Create ERD according to task "Books are bought by Users". Each entity should have three attributes, except primary key.
+//4. Create table, according to ERD without STATIC.
+//5. Insert some data.
+//6. Update some record.
+//7. Drop table.
+//8. Create table, according to ERD with STATIC.
+//9. Insert some data.
+//10. Update some record.
+//11. Drop table and keyspace.
+
 
 CREATE KEYSPACE IF NOT EXISTS sakhno
 	WITH replication = {
