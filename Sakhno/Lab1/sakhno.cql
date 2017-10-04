@@ -41,7 +41,7 @@ UPDATE sakhno.bookUser
 SET book_name = 'my favorite film'
 WHERE book_id = 1 AND date_of_sell='2017-10-13' AND user_id=1;
 
-SELECT * FROM sakhno.bookUser;;
+SELECT * FROM sakhno.bookUser;
 
 DROP TABLE IF EXISTS bookUser;
 
