@@ -1,3 +1,5 @@
+//Books are buing by Users
+
 CREATE KEYSPACE IF NOT EXISTS sakhno
 	WITH replication = {
 	'class': 'SimpleStrategy',
