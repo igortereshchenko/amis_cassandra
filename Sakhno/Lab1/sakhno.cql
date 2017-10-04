@@ -35,13 +35,13 @@ VALUES (2, 'my favorite book2', '2017-10-14', 20, 2, 'Anya2', 'sakhno2@gmail.com
 INSERT INTO sakhno.bookUser (book_id, book_name, date_of_sell, price, user_id, user_name, user_email, user_bd)
 VALUES (3, 'my favorite book3', '2017-10-15', 20, 3, 'Anya3', 'sakhno3@gmail.com', '1994-01-03');
 
-select * from sakhno.bookUser;
+SELECT * FROM sakhno.bookUser;
 
 UPDATE sakhno.bookUser
 SET book_name = 'my favorite film'
 WHERE book_id = 1 AND date_of_sell='2017-10-13' AND user_id=1;
 
-select * from sakhno.bookUser;
+SELECT * FROM sakhno.bookUser;;
 
 DROP TABLE IF EXISTS bookUser;
 
@@ -66,14 +66,14 @@ VALUES (2, 'my favorite book2', '2017-10-14', 20, 2, 'Anya2', 'sakhno2@gmail.com
 INSERT INTO sakhno.bookUser (book_id, book_name, date_of_sell, price, user_id, user_name, user_email, user_bd)
 VALUES (3, 'my favorite book3', '2017-10-15', 20, 3, 'Anya3', 'sakhno3@gmail.com', '1994-01-03');
 
-select * from sakhno.bookUser;
+SELECT * FROM sakhno.bookUser;
 
 UPDATE sakhno.bookUser
 SET book_name = 'my favorite film',
 	price = 19
 WHERE book_id = 1 AND date_of_sell='2017-10-13' AND user_id=1;
 
-select * from sakhno.bookUser;
+SELECT * FROM sakhno.bookUser;
 
 DROP TABLE IF EXISTS bookUser;
 DROP KEYSPACE IF EXISTS sakhno;
