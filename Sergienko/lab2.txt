@@ -1,0 +1,83 @@
+CREATE keyspace IF NOT EXISTS sergienko
+    WITH replication = {
+        'class': 'SimpleStrategy',
+        'replication_factor': 1
+    };
+
+
+CREATE TABLE sergienko.products (
+    id int,
+    name text,
+    value_type text,
+    primary key (id)
+);
+
+
+CREATE TABLE sergienko.user_want_list (
+    id int,
+    user_id int,
+    ancestor_id int,
+    product_list list<frozen<map<int, double>>>,
+    primary key(user_id, id)
+);
+
+
+CREATE TABLE sergienko.shop_list (
+    id int,
+    shop_id int,
+    product_list list<frozen<map<int, double>>>,
+    primary key(shop_id, id)
+);
+
+
+CREATE TABLE sergienko.user_shop_list (
+    id int,
+    want_list_id int,
+    product_list list<frozen<map<int, double>>>,
+    primary key(id)
+);
+
+
+INSERT INTO sergienko.products (id, name, value_type)
+VALUES (1, 'food', 'kg');
+
+INSERT INTO sergienko.products (id, name, value_type)
+VALUES (2, 'water', 'l');
+
+INSERT INTO sergienko.products (id, name, value_type)
+VALUES (3, 'bag', 'amount');
+
+
+INSERT INTO sergienko.user_want_list (id, user_id, ancestor_id, product_list)
+VALUES (1, 1, 0, [{1:2.0}]);
+
+INSERT INTO sergienko.user_want_list (id, user_id, ancestor_id, product_list)
+VALUES (2, 1, 0, [{1:3.0}, {2:1.0}]);
+
+//update list by ancestor id
+INSERT INTO sergienko.user_want_list (id, user_id, ancestor_id, product_list)
+VALUES (3, 1, 2, [{1:3.0}, {2:2.0}]);
+
+
+INSERT INTO sergienko.shop_list (id, shop_id, product_list)
+VALUES (1, 1, [{1:2.0}]);
+
+INSERT INTO sergienko.shop_list (id, shop_id, product_list)
+VALUES (2, 2, [{1:3.0}, {2:5.0}, {3:10.0}]);
+
+
+//make shopping
+INSERT INTO sergienko.user_shop_list (id, want_list_id, product_list)
+VALUES (1, 2, [{1:3.0}, {2:1.0}]);
+
+UPDATE sergienko.shop_list SET product_list = [{2:4.0}, {3:10.0}] WHERE shop_id=2 and id=2;
+
+
+select * from sergienko.user_shop_list;
+
+
+DROP TABLE sergienko.products;
+DROP TABLE sergienko.user_want_list;
+DROP TABLE sergienko.user_shop_list;
+DROP TABLE sergienko.shop_list;
+DROP KEYSPACE sergienko;
