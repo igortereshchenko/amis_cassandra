@@ -1,0 +1,50 @@
+drop type if exists product;
+
+create type product 
+(
+	product_count int,
+	product_price int
+);
+
+
+drop table if exists store;
+create table if not exists store
+(	
+	store_id int,
+	what_to_order map<text,frozen<product>>,
+	what_we_got map<text,frozen<product>>,
+	primary key (store_id)	
+);
+
+
+insert into store json 
+'{
+	"store_id": "1",
+	"what_to_order": {},
+	"what_we_got": {
+					 "kartoshka": {
+									"product_count":"3",
+									"product_price":"10"
+									},
+					"morkva": {
+								"product_count":"2",
+								"product_price":"11"
+								}
+					}
+}';
+
+select json * from store;
+
+//minus product from general list and adding it to ehat_to_buy list
+update store set what_we_got['kartoshka']={product_count:0, product_price:10} where store_id=1;
+update store set what_to_order = {
+									'kartoshka': {
+													
+													"product_count":1,
+													"product_price":10
+													}
+} where store_id=1;
+
+select json * from store;
+
+
