@@ -95,6 +95,7 @@ BEGIN BATCH
 	}';
 	
 	insert into wish_list JSON '{
+		"user_wish_id":1,
 		"user_id":1,
 		"wish_list":{
 			"2017-12-02":{
