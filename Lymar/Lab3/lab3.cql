@@ -49,9 +49,10 @@ create table if not exists  bankOperation(
 );
 
 create table if not exists wish_list(
+	user_wish_id int,
 	user_id int,
 	wish_list MAP<text, FROZEN<wish_credit>>, //<date,wish>
-	PRIMARY KEY (user_id)
+	PRIMARY KEY (user_wish_id)
 );
 
 insert into user JSON '{
