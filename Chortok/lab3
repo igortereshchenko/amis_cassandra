@@ -1,0 +1,86 @@
+CREATE TYPE IF NOT EXISTS roomType(
+	room_num 		int,
+	price	 		float	
+);
+
+
+CREATE TABLE IF NOT EXISTS "HOTEL" (
+	hotel_id text,
+	name text,
+	room_map map <int, frozen<roomType>>, -- trans_id, (room_num, price) 
+	 
+	PRIMARY KEY (hotel_id)
+);
+
+CREATE TABLE IF NOT EXISTS "USER" (
+	user_id text,
+	user_balance int,
+	dreamHotel 	set <text>,-- hotel_id
+	 
+	PRIMARY KEY (user_id)
+);
+
+CREATE TABLE IF NOT EXISTS "HOTELTRANSACTION" (
+	trans_id int,
+	start_date date,
+	finish_date date,
+	user_id text, 
+	hotel_id text,
+	room_type frozen<roomtype>,	
+	 
+	PRIMARY KEY (trans_id)
+);
+
+
+BEGIN BATCH 
+
+INSERT INTO "HOTEL" JSON ' {
+"hotel_id": "1",
+"name": "Name1",
+"room_map": {"NULL" : {"room_num" : "1", "price" : 100}}
+}';
+
+APPLY BATCH;
+
+SELECT JSON * FROM "HOTEL";
+
+
+
+BEGIN BATCH 
+
+INSERT INTO "USER" JSON ' {
+"user_id": "1",
+"user_balance": 1000,
+"dreamHotel": ["1", "2"]
+}';
+
+APPLY BATCH;
+
+SELECT JSON * FROM "USER";
+
+
+BEGIN BATCH 
+
+INSERT INTO "HOTELTRANSACTION" JSON ' {
+"trans_id": 1,
+"start_date": "‎‎2017-03-12",
+"finish_date": "‎‎2017-03-14",
+"user_id": "1",
+"hotel_id": "1",
+"room_type": {"room_num" : 1,
+	"price" : 100		}
+}';
+
+
+UPDATE "HOTEL" 
+SET room_map = {"1" : {'room_num' : '1', 'price' : 100}}
+where hotel_id ='1';
+
+
+UPDATE "USER"
+SET user_balance = 800 -- ‎‎1000 - 100*2 	-- user_balance - price* DATE ("‎‎2017-03-14" - "‎‎2017-03-12",)
+where user_id = '1';
+
+APPLY BATCH;
+	
+SELECT JSON * FROM "HOTELTRANSACTION";
