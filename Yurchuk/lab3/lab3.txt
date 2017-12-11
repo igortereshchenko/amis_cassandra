@@ -1,0 +1,146 @@
+//Create all table
+
+CREATE TYPE IF NOT EXISTS good(
+	amount int,
+	price int
+);
+
+CREATE TYPE IF NOT EXISTS meal(
+	amount int,
+	time date
+);
+
+drop table if exists pets_meal;
+
+create table if not exists pets_meal(
+	user_id int,
+	meal_id int,
+	pet_id int,	
+	date timestamp,
+	is_feed boolean,
+	amount int,
+	//remaind int static,
+	//feed_pet frozen<meal>,
+	PRIMARY KEY(user_id, meal_id, pet_id, date)
+);
+
+drop table if exists warehouse_opp;
+create table if not exists warehouse_opp(
+	user_id int,
+	meal_id int,	
+	date timestamp,
+	buy_meal frozen<good>,
+	remaind int,
+	PRIMARY KEY(user_id, meal_id, date)
+);
+
+drop table if exists user;
+create table if not exists user(
+	user_id int,
+	user_name text,
+	pets set<int>,
+	PRIMARY KEY (user_id)
+);
+
+drop table if exists pet;
+create table if not exists pet(
+	pet_id int,
+	pet_name text,
+	pet_type text,
+	PRIMARY KEY (pet_id)
+);
+
+drop table if exists meal;
+create table if not exists meal(
+	meal_id int,
+	meal_name text,
+	
+	PRIMARY KEY (meal_id)
+);
+//=========================
+
+//Insert data into table==========
+
+
+insert into pet json '{
+"pet_id" : 1,
+"pet_name": "Good boy",
+"pet_type": "Dog"}';
+
+insert into pet json '{
+"pet_id" : 2,
+"pet_name": "Kesha",
+"pet_type": "Parrot"}';
+insert into user json'{
+"user_id" :1,
+"user_name": "Vasya",
+"pets": [1,2]
+}';
+
+
+
+
+
+select * from warehouse_opp;
+
+select * from pets_meal;
+
+//Create meal schedule for pets
+BEGIN BATCH
+insert into pets_meal(user_id, meal_id, pet_id, date, amount, is_feed) 
+VALUES( 1, 2, 1, '2017-11-03 18:00', 10, false) ;
+
+insert into pets_meal(user_id, meal_id, pet_id, date, amount, is_feed) 
+VALUES( 1, 2, 2, '2017-11-03 19:00', 23, false) ;
+
+APPLY BATCH;
+//=============================
+
+//Batch for insert meal at the warehouse
+BEGIN BATCH
+	insert into meal (meal_id, meal_name) values (1, 'Meat') ;
+	insert into meal (meal_id, meal_name) values (2, 'Corn') ;
+	
+	insert into warehouse_opp json'{
+	"user_id": 1,
+	"meal_id":  1,
+	"date": "2017-11-03 18:00",
+	"buy_meal": {"amount": 20, "price": 12},
+	"remaind" : 20
+	}';
+	
+	insert into warehouse_opp json'{
+	"user_id": 1,
+	"meal_id":  2,
+	"date": "2017-11-03 18:00",
+	"buy_meal": {"amount": 220, "price": 2},
+	"remaind" :220
+	}';
+	
+/* 	update  pets_meal set remaind = 20
+	where meal_id = 1 and user_id = 1;
+	
+	update  pets_meal set remaind = 220
+	where meal_id = 2 and user_id = 1;*/
+	
+APPLY BATCH;
+
+select * from warehouse_opp;
+
+select * from pets_meal;
+
+
+//Feed a dog====
+BEGIN BATCH
+update  pets_meal
+set is_feed = true 
+where user_id = 1 and meal_id =  1 and pet_id =  1 and date = '2017-11-03 18:00' ;
+
+insert into warehouse_opp (user_id, meal_id, date, remaind) 
+values(1,1,'2017-11-03 18:40',10);
+
+APPLY BATCH;
+
+
+
+

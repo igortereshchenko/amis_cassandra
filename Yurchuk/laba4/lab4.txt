@@ -1,0 +1,47 @@
+CREATE OR REPLACE FUNCTION petsAmountMeals(pets_amount map<int,int>, pet_id int,  amount int)
+RETURNS NULL ON NULL INPUT
+RETURNS map<int,int>
+LANGUAGE java
+AS $$
+	if (pets_amount.containsKey(pet_id)){
+    	pets_amount.put(pet_id,(int) pets_amount.get(pet_id) + amount);
+	}else{
+		pets_amount.put(pet_id, amount);
+    }
+	return pets_amount;
+$$; 
+
+CREATE OR REPLACE AGGREGATE maxFeadPet(int, int)
+	SFUNC petsAmountMeals
+	STYPE map<int,int>
+	//FINALFUNC GetMaxFead
+	INITCOND {};
+
+select * from pets_meal;
+	
+SELECT maxFeadPet(pet_id, amount) 
+	FROM pets_meal;	
+	
+CREATE OR REPLACE FUNCTION getMealsPets(pets_meals map<int,frozen<set<int>>>, pet_id int, meal_id int)
+RETURNS NULL ON NULL INPUT
+RETURNS map<int,int>
+LANGUAGE java
+AS $$
+
+	if (pets_meals.containsKey(meal_id)){
+		Set<Integer> set_pets = pets_meals.get(meal_id);
+		set_pets.add(new Integer(pet_id));
+    	pets_meals.put(meal_id, set_pets);
+	}else{
+		Set<Integer> set_pets = new HashSet<Integer>();
+		set_pets.add(1);
+		pets_meals.put(meal_id, set_pets);
+    }
+	return pets_meals;
+$$; 
+
+CREATE OR REPLACE AGGREGATE mealsPets(int, int)
+	SFUNC getMealsPets
+	STYPE map<int,FROZEN<set<int>>>
+	//FINALFUNC GetMaxFead
+	INITCOND {};
