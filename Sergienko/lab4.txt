@@ -1,0 +1,115 @@
+CREATE keyspace IF NOT EXISTS sergienko
+    WITH replication = {
+        'class': 'SimpleStrategy',
+        'replication_factor': 1
+    };
+
+use sergienko;
+
+CREATE TYPE IF NOT EXISTS "product"(
+    id int,
+    name text,
+    value_type text,
+    price double
+
+);
+
+CREATE TABLE user (
+    user_id int,
+    user_balance double,
+    primary key(user_id)
+);
+
+
+CREATE TABLE shop (
+    id int,
+    shop_id int,
+    descendant int,
+    product_type frozen<product>,
+    got_product double,
+    has_product double,
+    sold_product double,
+    primary key(shop_id, product_type, id)
+);
+
+CREATE TABLE user_order_list (
+    id int,
+    user_id int,
+    shop_id int,
+    user_want_list frozen<map<product, double>>,
+    user_got_list frozen<map<product, double>>,
+    primary key(id)
+);
+
+CREATE TABLE user_wish_list (
+    id int,
+    user_id int,
+    user_want_list frozen<map<product, double>>,
+    wish_date date,
+    primary key(id)
+);
+
+//add user
+INSERT INTO user (user_id, user_balance) VALUES(1, 100.00);
+
+//add wishes to wish_list
+INSERT INTO user_wish_list (id, user_id, user_want_list, wish_date) VALUES(1, 1, {(1, 'food', 'kg', 5.00):10}, '2017-12-01');
+INSERT INTO user_wish_list (id, user_id, user_want_list, wish_date) VALUES(2, 1, {(1, 'food', 'kg', 5.00):2}, '2017-12-02');
+
+//add goods to shop
+INSERT INTO shop (shop_id, id, descendant, product_type, got_product, has_product, sold_product) VALUES(1, 1, 2, (1, 'food', 'kg', 5.00), 5.0, 5.0, 0.0);
+
+INSERT INTO shop (shop_id, id, descendant, product_type, got_product, has_product, sold_product) VALUES(1, 2, 3, (1, 'food', 'kg', 5.00), 3.0, 8.0, 0.0);
+
+INSERT INTO shop (shop_id, id, descendant, product_type, got_product, has_product, sold_product) VALUES(1, 3, 4, (1, 'food', 'kg', 5.00), 0.0, 6.0, 2.0);
+
+INSERT INTO shop (shop_id, id, descendant, product_type, got_product, has_product, sold_product) VALUES(1, 4, 0, (1, 'food', 'kg', 5.00), 1.0, 5.0, 2.0);
+
+INSERT INTO shop (shop_id, id, descendant, product_type, got_product, has_product, sold_product) VALUES(2, 10, 11, (1, 'food', 'kg', 5.00), 5.0, 5.0, 0.0);
+
+
+CREATE OR REPLACE FUNCTION cumulate_sum(state double, got double, sold double)
+RETURNS NULL ON NULL INPUT
+RETURNS double
+LANGUAGE java
+AS $$
+    return state + got + sold;
+$$; 
+ 
+
+CREATE OR REPLACE AGGREGATE get_income_outcome_sum(double, double)
+    SFUNC cumulate_sum
+    STYPE double
+    INITCOND 0.0;
+
+
+select shop_id, product_type, get_income_outcome_sum(got_product, sold_product) from shop where shop_id=1 and product_type =(1, 'food', 'kg', 5.00);
+
+
+CREATE OR REPLACE FUNCTION cumulate_shops(state tuple<int, list<int>>, shop_id int)
+RETURNS NULL ON NULL INPUT
+RETURNS tuple<int, list<int>>
+LANGUAGE java
+AS $$
+    import List
+    if (! state.getValue(1).contains(shop_id)){
+        state.setInt(0, state.getInt(0) + 1);
+        state.getValue(1).add(shop_id);
+    }
+    return state;
+$$; 
+ 
+
+CREATE OR REPLACE AGGREGATE count_shops(int)
+    SFUNC cumulate_shops
+    STYPE tuple<int, list<int>>
+    INITCOND (0, []);
+
+
+select product_type, count_shops(shop_id) from shop where product_type = (1, 'food', 'kg', 5.00);
+
+
+
+select * from user_order_list;
+
+DROP KEYSPACE sergienko;
