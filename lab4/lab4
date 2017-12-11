@@ -1,0 +1,168 @@
+CREATE TYPE IF NOT EXISTS roomType(
+ room_num   int,
+ price    float 
+);
+
+
+CREATE TABLE IF NOT EXISTS "HOTEL" (
+ hotel_id text,
+ name text,
+ room_map map <int, frozen<roomType», — trans_id, (room_num, price) 
+  
+ PRIMARY KEY (hotel_id)
+);
+
+CREATE TABLE IF NOT EXISTS "USER" (
+ user_id text,
+ user_balance int,
+ dreamHotel  set <text>,— hotel_id
+  
+ PRIMARY KEY (user_id)
+);
+
+CREATE TABLE IF NOT EXISTS "HOTELTRANSACTION" (
+ trans_id int,
+ start_date date,
+ finish_date date,
+ user_id text, 
+ hotel_id text,
+ room_type frozen<roomtype>, 
+  
+ PRIMARY KEY (trans_id)
+);
+
+
+BEGIN BATCH 
+
+INSERT INTO "HOTEL" JSON ' {
+"hotel_id": "1",
+"name": "Name1",
+"room_map": {"NULL" : {"room_num" : "1", "price" : 100}}
+}';
+
+INSERT INTO "HOTEL" JSON ' {
+"hotel_id": "2",
+"name": "Name2",
+"room_map": {"NULL" : {"room_num" : "1", "price" : 150}}
+}';
+
+APPLY BATCH;
+
+SELECT JSON * FROM "HOTEL";
+
+
+
+BEGIN BATCH 
+
+INSERT INTO "USER" JSON ' {
+"user_id": "1",
+"user_balance": 1000,
+"dreamHotel": ["1", "2"]
+}';
+
+INSERT INTO "USER" JSON ' {
+"user_id": "2",
+"user_balance": 1000,
+"dreamHotel": ["1", "2"]
+}';
+
+INSERT INTO "USER" JSON ' {
+"user_id": "3",
+"user_balance": 1000,
+"dreamHotel": ["1", "2"]
+}';
+
+APPLY BATCH;
+
+SELECT JSON * FROM "USER";
+
+
+BEGIN BATCH 
+
+INSERT INTO "HOTELTRANSACTION" JSON ' {
+"trans_id": 1,
+"start_date": "2017-03-12",
+"finish_date": "2017-03-14",
+"user_id": "1",
+"hotel_id": "1",
+"room_type": {"room_num" : 1,
+ "price" : 100  }
+}';
+
+INSERT INTO "HOTELTRANSACTION" JSON ' {
+"trans_id": 2,
+"start_date": "2017-03-12",
+"finish_date": "2017-03-14",
+"user_id": "2",
+"hotel_id": "2",
+"room_type": {"room_num" : 1,
+ "price" : 100  }
+}';
+
+
+INSERT INTO "HOTELTRANSACTION" JSON ' {
+"trans_id": 3,
+"start_date": "2017-04-12",
+"finish_date": "2017-04-14",
+"user_id": "1",
+"hotel_id": "2",
+"room_type": {"room_num" : 1,
+"price" : 100  }
+}';
+
+
+UPDATE "HOTEL" 
+SET "room_map" = {'1' : {'room_num' : '1', 'price' : 100}}
+where "hotel_id" = '1';
+
+UPDATE "HOTEL" 
+SET "room_map" = {'2' : {'room_num' : '1', 'price' : 150}}
+where "hotel_id" = '2';
+
+UPDATE "HOTEL" 
+SET "room_map" = {'3' : {'room_num' : '1', 'price' : 100}}
+where "hotel_id" = '1';
+
+
+UPDATE "USER"
+SET user_balance = 800 — 1000 - 100*2  — user_balance - price* DATE ("2017-03-14" - "2017-03-12",)
+where user_id = '1';
+
+UPDATE "USER"
+SET user_balance = 700 
+where user_id = '2';
+
+UPDATE "USER"
+SET user_balance = 800 
+where user_id = '3';
+
+APPLY BATCH;
+
+
+CREATE OR REPLACE FUNCTION count_hotels (count_h map<int,int>, user_id text,  hotel_id text)
+RETURNS NULL ON NULL INPUT
+RETURNS map<text,int>
+LANGUAGE java
+AS $$
+if (count_h.containsKey(user_id))
+ { 
+      count_h.put(user_id,
+      (int) count_h.get(user_id) + 1);
+   }
+  else
+ {
+  count_h.put(user_id, 1);
+ }
+  return count_h;
+$$; 
+
+CREATE OR REPLACE AGGREGATE cnt_hotels(text, text)
+  SFUNC count_hotels
+  STYPE map<text,int>
+  INITCOND {};
+
+SELECT cnt_hotels(user_id, hotel_id) FROM "HOTELTRANSACTION";
+
+
+ 
+SELECT JSON * FROM "HOTELTRANSACTION";
