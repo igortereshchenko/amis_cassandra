@@ -1,0 +1,45 @@
+CREATE KEYSPACE IF NOT EXISTS "test" 
+with replication = {'class':'SimpleStrategy', 'replication_factor':3};
+USE test;
+
+
+//create user_type
+ CREATE TYPE IF NOT EXISTS flightstatus(
+	by_schedule text,
+	delay int,
+	canceled boolean
+);
+
+drop table if exists "airport";
+create table if not exists "airport"(
+	plane_id int,
+	cities SET<text>,
+	primary Key (plane_id)
+);
+create table if not exists "flight_info" (
+	flight_id int,
+	departure_time timestamp,
+	arrived_time timestamp,
+	route List<text>,
+	flight_status MAP<int, FROZEN<flightstatus>>,
+	primary Key (flight_id)
+);
+
+INSERT INTO "airport" 
+  JSON '{ "plane_id":"1", "cities":["Kiev", "Lviv", "Kharkiv"]}';
+
+INSERT INTO "flight_info" 
+  JSON '{ "flight_id":"1",
+		  "departure_time":"2012-10-22 18:00",
+          "arrived_time": "2012-10-22 19:45",
+		  "route": ["Lviv", "Kiev", "Kharkiv"], 
+		  "flight_status": 
+								{"1"  : { "by_schedule":"No",
+										  "delay": "10",
+										  "canceled": "false"
+												}
+								}
+		  }';
+
+
+

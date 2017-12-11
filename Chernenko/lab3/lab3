@@ -1,0 +1,109 @@
+
+ drop table if exists "airport";
+// 
+ create table if not exists "airport"(
+ 	airport_id int,
+ 	planes SET<text>,
+ 	plane_isleave boolean,
+ 	primary Key (airport_id)
+ );
+ 
+DROP TABLE IF EXISTS "user_expences";
+
+CREATE TABLE "user_expences" (
+     user_name text,
+     user_balance float static,
+     service_code int,
+     service_description text,
+     service_iswish boolean,
+     service_price float,
+     
+     PRIMARY KEY (user_name, service_code)
+  );
+  
+//  DROP TABLE IF EXISTS "services";
+
+//CREATE TABLE "services" (
+//     service_name text,
+//	 service_code int,
+//     service_price float,
+//     service_iswish boolean,
+//     service_description text,
+//     PRIMARY KEY (service_code)
+//  );
+
+  
+ DROP TABLE IF EXISTS "wish_list";
+
+CREATE TABLE "wish_list" (
+	
+   flight_id int,
+   flight_price float,
+   flight_from text,
+   flight_to text,
+   flight_iswish boolean,
+    PRIMARY KEY (flight_id)
+);
+
+ INSERT INTO "wish_list" (flight_id, flight_price, flight_from, flight_to, flight_iswish)
+  VALUES (1, 25, 'Kiev', 'Paris', false );
+  
+   INSERT INTO "wish_list" (flight_id, flight_price, flight_from, flight_to, flight_iswish)
+  VALUES (2, 45, 'Lviv', 'Moscow', true );
+  
+   INSERT INTO "wish_list" (flight_id, flight_price, flight_from, flight_to, flight_iswish)
+  VALUES (3, 550, 'Kiev', 'New-York', false );
+
+SELECT * FROM "wish_list";
+
+ 
+  BEGIN BATCH
+
+  INSERT INTO "user_expences" (user_name, user_balance) VALUES ('user1', 50) IF NOT EXISTS;
+  
+  INSERT INTO "user_expences" (user_name, service_code, service_description, service_iswish, service_price)
+    VALUES ('user1', 3, 'wash car', false, 25.40);
+    
+  INSERT INTO "user_expences" (user_name, service_code,  service_description, service_iswish, service_price)
+    VALUES ('user1', 2, 'watch film', false, 10);
+    
+  INSERT INTO "user_expences" (user_name, service_code,  service_description, service_iswish, service_price)
+    VALUES ('user1', 1, 'fly abroad', true, 45);
+    
+APPLY BATCH;
+
+SELECT * FROM "user_expences";
+
+//find out current balance
+SELECT DISTINCT user_balance FROM  "user_expences" WHERE user_name='user1';
+
+
+BEGIN BATCH
+    
+ UPDATE "user_expences" SET service_iswish=false 
+  	WHERE user_name='user1' AND  service_code = 1;
+    
+ UPDATE "user_expences" SET service_iswish=true 
+  	WHERE user_name='user1' AND  service_code = 2;
+  	
+ UPDATE "user_expences" SET service_iswish=false 
+  	WHERE user_name='user1' AND  service_code = 3;
+  	
+  	
+ UPDATE "user_expences" 
+  SET user_balance = 40
+  	WHERE user_name='user1' IF user_balance=50;
+ 
+APPLY BATCH;
+
+SELECT * FROM "user_expences";
+
+
+  
+  
+  
+  
+  
+
+ 
+
