@@ -1,0 +1,177 @@
+DROP TABLE "UserOrder";
+DROP TABLE "Shop";
+DROP TABLE "TransactionLog";
+
+CREATE TYPE IF NOT EXISTS accountType(
+	account_id 	int,
+	balance 	float
+);
+
+CREATE TYPE IF NOT EXISTS wishType(
+	count 		int,
+	importance	 	float
+);
+
+CREATE TYPE IF NOT EXISTS orderType(
+	count 		int,
+	price	 	float
+);
+
+CREATE TYPE IF NOT EXISTS whType(
+	count 		int,
+	price	 	float
+);
+
+CREATE TABLE "UserOrder" (
+	user_id 	int,
+	userOrder 	map <int ,text>, -- goods, trans_id
+	account_id  int,
+	balance 	float,
+	
+	PRIMARY KEY (user_id)
+);
+
+CREATE TABLE "Shop" (
+	shop_id 	int,
+	goods 	map <int, text>, -- goods_id, trans_id
+	
+	PRIMARY KEY (shop_id)
+);
+
+CREATE TABLE "TransactionLog" (
+	trans_id 		text,
+	trans_date 		date,
+	user_id 		int,
+	shop_id     	int,
+	good_id			int,	
+	
+	user_wish 		frozen<wishType>,
+	user_order 		frozen<orderType>,
+	wh_operation	frozen<whType>,
+	
+	PRIMARY KEY (trans_id)
+);
+
+BEGIN BATCH
+
+INSERT INTO "TransactionLog" JSON ' {
+"trans_id" : "2",
+"trans_date": "2017-11-02",
+"shop_id" : 1,
+"good_id" : 1,
+"wh_operation": {"count" : 7, "price" : 30}}';
+
+INSERT INTO "Shop" JSON ' {
+"shop_id": 1,
+"goods": {"1" : "2"}}';
+
+INSERT INTO "UserOrder" JSON '{
+"user_id": 1,
+"userOrder": {},
+"account_id": "111",
+"balance": "500"}';
+
+INSERT INTO "UserOrder" JSON '{
+"user_id": 2,
+"userOrder": {},
+"account_id": "111",
+"balance": "500"}';
+
+APPLY BATCH;
+
+BEGIN BATCH 
+
+INSERT INTO "TransactionLog" JSON ' {
+"trans_id" : "3",
+"trans_date": "2017-11-03",
+"shop_id" : 1,
+"good_id" : 1,
+"user_id" : 1,
+"user_wish": {"count" : 3, "importance" : 1},
+"user_order": {"count" : 3, "price" : 12.00},
+"wh_operation": {"count" : 4, "price" : 12.00}}';
+
+update "UserOrder" 
+set balance = 488,
+userOrder = userOrder + {1 : '3'}
+where "user_id" = 1;
+
+INSERT INTO "TransactionLog" JSON ' {
+"trans_id" : "4",
+"trans_date": "2017-11-03",
+"shop_id" : 1,
+"good_id" : 1,
+"user_id" : 2,
+"user_wish": {"count" : 3, "importance" : 1},
+"user_order": {"count" : 2, "price" : 12.00},
+"wh_operation": {"count" : 2, "price" : 12.00}}';
+
+update "UserOrder" 
+set balance = 488,
+userOrder = userOrder + {1 : '4'}
+where "user_id" = 2;
+
+APPLY BATCH;
+
+
+CREATE OR REPLACE FUNCTION goods_count(goods_count map<int,int>, user_id int,  value int)
+RETURNS NULL ON NULL INPUT
+RETURNS map<int,int>
+LANGUAGE java
+AS $$
+  if (goods_count.containsKey(user_id))
+	{	
+     	goods_count.put(user_id,
+						(int) goods_count.get(user_id) + value);
+  	}
+  else
+	{
+		goods_count.put(user_id, value);
+	}
+  return goods_count;
+$$; 
+
+CREATE OR REPLACE AGGREGATE sumGoods(int, int)
+    SFUNC goods_count
+    STYPE map<int, int>
+    INITCOND (0);    
+   
+SELECT sumGoods(user_id, user_order.count) as goods_count_map FROM "TransactionLog";
+
+CREATE OR REPLACE FUNCTION goods_count_Shop(goods_count map<int, int>, 
+											shop_id int, 
+											value int, 
+											whValue int
+)
+RETURNS NULL ON NULL INPUT
+RETURNS map<int,int>
+LANGUAGE java
+AS $$
+  if (goods_count.containsKey(shop_id))
+	{	
+     	goods_count.put(shop_id,
+						(int) goods_count.get(shop_id) + value + value ? whValue : 0);
+  	}
+  else
+	{
+		goods_count.put(shop_id, value + value ? whValue : 0);
+	}
+  return goods_count;
+$$; 
+
+CREATE OR REPLACE AGGREGATE sumGoodsShop(int, int, int)
+    SFUNC goods_count_Shop
+    STYPE map<int, int>
+    INITCOND (0); 
+    
+SELECT sumGoodsShop(shop_id, user_order.count, wh_operation.count) as goods_count_map FROM "TransactionLog";
+      
+
+
+
+
+
+
+
+
+
