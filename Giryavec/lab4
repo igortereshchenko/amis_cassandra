@@ -1,0 +1,131 @@
+create type if not exists item_add(
+	quantity		int,
+	datetime		timestamp
+);
+
+create table if not exists "User"(
+	user_id			int,
+	balance			float,
+	primary key(user_id)
+);
+
+create table if not exists "Order" (
+	user_id				int,
+	order_id 			int,
+	restaraunt_id		int,
+	item 				map<text, int>,
+	invoiced			boolean,
+	datetime			timestamp,
+	order_price			float,
+	primary key(user_id, order_id, restaraunt_id)
+);
+
+create table if not exists "AvailableItems" (
+	restaraunt_id	int,
+	item_name 		text,
+	price 			float,
+	orders			map<int, int>,
+	new_items		map<int, int>,   
+	primary key(restaraunt_id, item_name)
+);
+
+create table if not exists "WarehouseTrans" (
+	warehousetrans_id 	int,
+	restaraunt_id		int,
+	item 				map<text, int>,
+	status				boolean,
+	datetime			timestamp,
+	primary key(warehousetrans_id, restaraunt_id)
+);
+
+//CREATE INDEX work_key ON "Order" (KEYS(item)); 
+
+//add products in warehouse
+begin batch
+insert into "AvailableItems" JSON '{ "restaraunt_id":"1", "item_name":"Gamburger","price":"5", "new_items" : 
+									{ "1" : "32"}}';									
+									
+insert into "AvailableItems" JSON '{ "restaraunt_id":"1", "item_name":"cheezeburger","price":"6", "new_items" : 
+									{ "1" : "32"}}';
+insert into "WarehouseTrans"	JSON '{"warehousetrans_id":"1", "restaraunt_id":"1", "item" : 
+									{ "Gamburger" :"32","cheezeburger":"32"}, 
+										"datetime":	"1945-08-20", "status":"true"}';						
+apply batch;
+select * from "AvailableItems"; 
+
+//new User
+insert into "User"   JSON '{"user_id":"1","balance":"50000.83"}';
+
+//create wishList
+insert into "Order"	 JSON '{"user_id":"1","restaraunt_id":"1", "order_id":"12","item" : 
+									{ "Gamburger" :"2","cheezeburger":"1"}, 
+										"datetime":	"1945-08-20", "invoiced":"false", "order_price": "16"}';	
+											
+
+//new order 
+begin batch
+UPDATE "AvailableItems"  
+		SET	orders =  orders + { 12 : 1}
+				where item_name = 'Gamburger' AND restaraunt_id = 1;		
+							
+UPDATE "AvailableItems"  
+		SET	orders =  orders + { 12 : 1}
+				where item_name = 'cheezeburger'AND restaraunt_id = 1;
+UPDATE "Order" 
+		SET	item = { 'Gamburger' :1,'cheezeburger':1}, order_price = 11, invoiced = true
+			where user_id = 1 AND order_id = 12 AND restaraunt_id = 1;		
+UPDATE "User"
+		SET balance = 49989.83		
+			where user_id = 1;	 
+apply batch;
+
+
+
+
+select * from "User";
+select * from "Order";
+select * from "AvailableItems";
+
+CREATE OR REPLACE FUNCTION calculatequantitysum(result  int, orderitem map<int, int>, warehouseitem map<int, int> )
+ CALLED ON NULL INPUT
+    RETURNS int
+    LANGUAGE java
+    AS $$ 
+	import java.util.*;
+	
+	for (Object key: orderitem.keySet()) 
+	{ 
+		result = result + orderitem.Vget((String)key);
+	}
+	return result;
+    $$;
+    
+CREATE OR REPLACE AGGREGATE sum(int)
+    SFUNC calculatequantitysum
+    STYPE int
+    INITCOND (0);
+    
+CREATE OR REPLACE FUNCTION calculateitemnumber(item_restarauntquan  Map<text,int>, item_id text)
+ CALLED ON NULL INPUT
+    RETURNS Map<text,int>
+    LANGUAGE java
+    AS $$ 
+	//import java.util.Map<int, int> map = new java.util.Map(item_restarauntquan);
+	if(item_restarauntquan.containsKey(item_id))
+	{
+		item_restarauntquan.put(item_id, (int)item_restarauntquan.get(item_id) + 1);
+	}
+	else
+	{
+		item_restarauntquan.put(item_id, 1);
+	}
+	
+	return item_restarauntquan;
+    $$;    
+    
+CREATE OR REPLACE AGGREGATE itemrestaraunt(text)
+SFUNC calculateitemnumber
+STYPE Map<text,int>
+INITCOND {};
+
+SELECT itemrestaraunt(item_name) FROM "AvailableItems";
