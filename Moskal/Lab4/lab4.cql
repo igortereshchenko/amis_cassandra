@@ -196,7 +196,7 @@ AS $$
     }
     if (station_id != null) {
         if(state.containsKey(station_id)) {
-          state.put(station_id,  (Long)state.get(station_id) + turnover); 
+          state.put(station_id,  (float)state.get(station_id) + turnover); 
         } else {
           state.put(station_id, turnover);
         }
