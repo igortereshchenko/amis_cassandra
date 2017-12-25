@@ -1,0 +1,95 @@
+/*
+Task:
+1. Create keyspace named as "test" with replication factor 2.
+2. Alter keyspace named as "test" with replication factor 3 using command ALTER.
+3. Create table which describes 1 to N relation "User_order". Each entity should have atleast 3 attributes in addition to key attributes.
+4. Populate table from step 3 with data.
+5. Update record to create example of nonconsistent data.
+6. Recreate table so attributes of main entity are marked with static keyword.
+7. Populate table from step 6 with data.
+8. Update record and check that data are still consistent.
+9. Drop created tables and keyspaces
+*/
+
+-- 1
+create keyspace if not exists "test" with replication = {'class':'SimpleStrategy', 'replication_factor':2};
+
+-- 2
+alter keyspace "test" with replication = {'class':'SimpleStrategy', 'replication_factor':3};
+
+use "test";
+
+-- 3
+create table if not exists books_order(
+    user_id int,
+    user_first_name text,
+    user_last_name text,
+    user_birthday date,
+    bookshop_id int,
+    book_id int,
+    book_name text,
+    book_description text,
+    price int,
+    PRIMARY KEY(user_id, bookshop_id, book_id)
+);
+
+-- 4
+insert into books_order(user_id, user_first_name, user_last_name, user_birthday, bookshop_id, book_id, book_name, book_description, price)
+values (1, 'Oleksandr', 'Buchynskyi', '1995-08-30', 1, 1, 'Name1', 'Description1', 100);
+
+insert into books_order(user_id, user_first_name, user_last_name, user_birthday, bookshop_id, book_id, book_name, book_description, price)
+values (1, 'Oleksandr', 'Buchynskyi', '1995-08-30', 1, 2, 'Name2', 'Description2', 80);
+
+insert into books_order(user_id, user_first_name, user_last_name, user_birthday, bookshop_id, book_id, book_name, book_description, price)
+values (2, 'Ivan', 'Ivanow', '2000-08-10', 2, 3, 'Name3', 'Description3', 70);
+
+select * from books_order;
+
+-- 5
+
+update books_order set user_last_name = 'Inccorect_Last_Name' 
+where  user_id 		= 1 and 
+		bookshop_id = 1 and 
+		book_id 	= 1;
+		
+select user_id, user_first_name, user_last_name, user_birthday from books_order 
+where user_id = 1;
+
+-- 6
+
+drop table books_order;
+
+create table if not exists books_order(
+    user_ID int,
+    user_first_name text STATIC,
+    user_last_name text STATIC,
+    user_birthday date STATIC,
+    
+    bookshop_Id int,
+    book_Id int,
+    book_name text,
+    book_description text,
+    price int,     
+    
+    PRIMARY KEY(user_ID, bookshop_Id, book_Id)
+);
+
+-- 7
+insert into books_order(user_id, user_first_name, user_last_name, user_birthday, bookshop_id, book_id, book_name, book_description, price)
+values (1, 'Oleksandr', 'Buchynskyi', '1995-08-30', 1, 1, 'Name1', 'Description1', 100);
+
+insert into books_order(user_id, user_first_name, user_last_name, user_birthday, bookshop_id, book_id, book_name, book_description, price)
+values (1, 'Oleksandr', 'Buchynskyi', '1995-08-30', 1, 2, 'Name2', 'Description2', 80);
+
+insert into books_order(user_id, user_first_name, user_last_name, user_birthday, bookshop_id, book_id, book_name, book_description, price)
+values (2, 'Ivan', 'Ivanow', '2000-08-10', 2, 3, 'Name3', 'Description3', 70);
+select * from books_order;
+
+-- 8
+update books_order set user_last_name = 'Inccorect_Last_Name' 
+where  user_id 		= 1 and 
+		bookshop_id = 1 and 
+		book_id 	= 1;
+-- 9
+select user_id, user_first_name, user_last_name, user_birthday from books_order 
+where user_id = 1;
