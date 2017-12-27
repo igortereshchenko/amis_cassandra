@@ -17,10 +17,15 @@ func NewAPI(session *gocql.Session) http.Handler {
 	r := mux.NewRouter()
 	r.Path("/driver").Methods(http.MethodGet).HandlerFunc(LogMW(ErrMW(api.DriversList)))
 	r.Path("/driver").Methods(http.MethodPost).HandlerFunc(LogMW(ErrMW(api.RegisterDriver)))
+	r.Path("/driver").Methods(http.MethodDelete).HandlerFunc(LogMW(ErrMW(api.DeleteDriver)))
 	r.Path("/car").Methods(http.MethodPost).HandlerFunc(LogMW(ErrMW(api.AddCar)))
 	r.Path("/balance").Methods(http.MethodPost).HandlerFunc(LogMW(ErrMW(api.ReplenishBalance)))
 	r.Path("/station").Methods(http.MethodGet).HandlerFunc(LogMW(ErrMW(api.StationsList)))
 	r.Path("/station").Methods(http.MethodPost).HandlerFunc(LogMW(ErrMW(api.RegisterStation)))
+	r.Path("/station").Methods(http.MethodDelete).HandlerFunc(LogMW(ErrMW(api.DeleteStation)))
+	r.Path("/gas").Methods(http.MethodPost).HandlerFunc(LogMW(ErrMW(api.ReplenishStation)))
+	r.Path("/refill").Methods(http.MethodPost).HandlerFunc(LogMW(ErrMW(api.Refill)))
+	r.Path("/spend").Methods(http.MethodPost).HandlerFunc(LogMW(ErrMW(api.Spend)))
 	return r
 }
 
@@ -204,7 +209,56 @@ func (api API) AddCar(w http.ResponseWriter, r *http.Request) (err error, code i
 	}
 	return nil, 200
 }
-
+func (api API) DeleteDriver(w http.ResponseWriter, r *http.Request) (err error, code int) {
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	type In struct {
+		DriverId gocql.UUID
+	}
+	var input In
+	if err := json.Unmarshal(b, &input); err != nil {
+		return err, http.StatusBadRequest
+	}
+	var defaultUUID = gocql.UUID{}
+	if input.DriverId == defaultUUID {
+		return fmt.Errorf("Check mandatory fields"), http.StatusBadRequest
+	}
+	if err := DeleteDriver(api.session, input.DriverId); err != nil {
+		return err, http.StatusInternalServerError
+	} else {
+		out, err := json.Marshal(map[string]interface{}{})
+		if err != nil {
+			return err, http.StatusInternalServerError
+		}
+		w.Write(out)
+	}
+	return nil, 200
+}
+func (api API) DeleteStation(w http.ResponseWriter, r *http.Request) (err error, code int) {
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	type In struct {
+		StationId gocql.UUID
+	}
+	var input In
+	if err := json.Unmarshal(b, &input); err != nil {
+		return err, http.StatusBadRequest
+	}
+	var defaultUUID = gocql.UUID{}
+	if input.StationId == defaultUUID {
+		return fmt.Errorf("Check mandatory fields"), http.StatusBadRequest
+	}
+	if err := DeleteStation(api.session, input.StationId); err != nil {
+		return err, http.StatusInternalServerError
+	} else {
+		out, err := json.Marshal(map[string]interface{}{})
+		if err != nil {
+			return err, http.StatusInternalServerError
+		}
+		w.Write(out)
+	}
+	return nil, 200
+}
 func (api API) ReplenishBalance(w http.ResponseWriter, r *http.Request) (err error, code int) {
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -225,6 +279,109 @@ func (api API) ReplenishBalance(w http.ResponseWriter, r *http.Request) (err err
 		return fmt.Errorf("Amount must be greater than zero"), http.StatusBadRequest
 	}
 	if err := ReplenishDriverBalance(api.session, input.DriverId, input.Amount); err != nil {
+		return err, http.StatusInternalServerError
+	} else {
+		out, err := json.Marshal(map[string]interface{}{})
+		if err != nil {
+			return err, http.StatusInternalServerError
+		}
+		w.Write(out)
+	}
+	return nil, 200
+}
+func (api API) ReplenishStation(w http.ResponseWriter, r *http.Request) (err error, code int) {
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	type In struct {
+		StationId gocql.UUID
+		Petrol    Petrol
+		Amount    float32
+	}
+	var input In
+	input.Petrol.Price = -1.
+	input.Amount = -1.
+	if err := json.Unmarshal(b, &input); err != nil {
+		return err, http.StatusBadRequest
+	}
+	var defaultUUID = gocql.UUID{}
+	if input.StationId == defaultUUID || input.Petrol.Price == -1. || input.Petrol.Name == "" ||
+		input.Amount == -1. {
+		return fmt.Errorf("Check mandatory fields"), http.StatusBadRequest
+	}
+	if input.Petrol.Price < 0. {
+		return fmt.Errorf("Price must be greater than zero"), http.StatusBadRequest
+	}
+	if err := ReplenishGasStation(api.session, input.StationId, input.Petrol, input.Amount); err != nil {
+		return err, http.StatusInternalServerError
+	} else {
+		out, err := json.Marshal(map[string]interface{}{})
+		if err != nil {
+			return err, http.StatusInternalServerError
+		}
+		w.Write(out)
+	}
+	return nil, 200
+}
+func (api API) Refill(w http.ResponseWriter, r *http.Request) (err error, code int) {
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	type In struct {
+		DriverId  gocql.UUID
+		StationId gocql.UUID
+		Car       Vehicle
+		Petrol    Petrol
+		Amount    float32
+	}
+	var input In
+	input.Petrol.Price = -1.
+	input.Amount = -1.
+	if err := json.Unmarshal(b, &input); err != nil {
+		return err, http.StatusBadRequest
+	}
+	var defaultUUID = gocql.UUID{}
+	if input.StationId == defaultUUID || input.DriverId == defaultUUID || input.Petrol.Price == -1. || input.Petrol.Name == "" || input.Amount == -1. {
+		return fmt.Errorf("Check mandatory fields"), http.StatusBadRequest
+	}
+	if input.Petrol.Price < 0. {
+		return fmt.Errorf("Price must be greater than zero"), http.StatusBadRequest
+	}
+
+	var purchase Purchase
+	purchase.Price = input.Petrol.Price
+	purchase.Volume = input.Amount
+	if err := RefillCar(api.session, input.DriverId, input.Car, input.StationId, input.Petrol, purchase); err != nil {
+		return err, http.StatusInternalServerError
+	} else {
+		out, err := json.Marshal(map[string]interface{}{})
+		if err != nil {
+			return err, http.StatusInternalServerError
+		}
+		w.Write(out)
+	}
+	return nil, 200
+}
+func (api API) Spend(w http.ResponseWriter, r *http.Request) (err error, code int) {
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	type In struct {
+		DriverId gocql.UUID
+		Car      Vehicle
+		Amount   float32
+	}
+	var input In
+	input.Amount = -1.
+	if err := json.Unmarshal(b, &input); err != nil {
+		return err, http.StatusBadRequest
+	}
+	var defaultUUID = gocql.UUID{}
+	if input.DriverId == defaultUUID || input.Amount == -1. {
+		return fmt.Errorf("Check mandatory fields"), http.StatusBadRequest
+	}
+	if input.Amount < 0. {
+		return fmt.Errorf("Amount must be greater than zero"), http.StatusBadRequest
+	}
+
+	if err := SubstractGas(api.session, input.DriverId, input.Car, input.Amount); err != nil {
 		return err, http.StatusInternalServerError
 	} else {
 		out, err := json.Marshal(map[string]interface{}{})

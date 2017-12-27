@@ -102,7 +102,7 @@ RETURNS map<frozen<Vehicle>,float>
 LANGUAGE java
 AS $$
 if(state.containsKey(vehicle)) {
-  state.put(vehicle,  (Long)state.get(vehicle) + volume);
+  state.put(vehicle,  (float)state.get(vehicle) + volume);
 } else {
   state.put(vehicle, volume);
 }

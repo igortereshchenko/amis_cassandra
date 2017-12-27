@@ -477,3 +477,25 @@ func GetGasStations(session *gocql.Session) ([]GasStation, error) {
 	}
 	return res, nil
 }
+
+func DeleteDriver(session *gocql.Session, driverId gocql.UUID) error {
+	stmt, names := qb.Delete("driver").Where(qb.Eq("id")).ToCql()
+	q := gocqlx.Query(session.Query(stmt).Consistency(gocql.Quorum), names).BindMap(qb.M{
+		"id": driverId,
+	})
+	if err := q.ExecRelease(); err != nil {
+		return fmt.Errorf("Delete Query error: %s", err)
+	}
+	return nil
+}
+
+func DeleteStation(session *gocql.Session, stationId gocql.UUID) error {
+	stmt, names := qb.Delete("gas_station").Where(qb.Eq("id")).ToCql()
+	q := gocqlx.Query(session.Query(stmt).Consistency(gocql.Quorum), names).BindMap(qb.M{
+		"id": stationId,
+	})
+	if err := q.ExecRelease(); err != nil {
+		return fmt.Errorf("Delete Query error: %s", err)
+	}
+	return nil
+}

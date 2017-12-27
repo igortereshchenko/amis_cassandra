@@ -159,6 +159,67 @@ Vue.component('balance_replenish_popup', {
         </div>
     `
 });
+Vue.component('station_replenish_popup', {
+    props: ['station'],
+    data: function() {
+        console.log("station_replenish_popup Data function called");
+        return {
+            petrol: '',
+            price: '',
+            amount: '',
+            error: ''
+        }
+    },
+    methods: {
+        close: function() {
+            this.petrol = this.price = this.amount = '';
+            window.data.StationReplenishPopup = false;
+        },
+        add: function() {
+            var self = this;
+            this.error = '';
+            if (this.price < 0.) {
+                this.error = 'Price value should be greater than zero';
+                return false;
+            }
+            if (this.amount < 0.) {
+                this.error = 'Amount value should be greater than zero';
+                return false;
+            }
+            window.client.replenishGas(this.station.Id, this.petrol, this.price, this.amount)
+                .then(resp => {
+                    if (resp.status != 200) {
+                        console.log(resp);
+                        throw 'Failed to replenish gas station';
+                    } else {
+                        window.client.reloadGasStations();
+                    }
+                })
+                .catch(e => {
+                    window.data.Error = e
+                })
+                .then(() => {
+                    self.close()
+                })
+            return false;
+        }
+    },
+    template: `
+        <div class="fullscreen_popup">
+            <div class="fullscreen_popup_content">
+                <p>Replenish {{station.Name}} gas reserve</p>
+                <form v-on:submit.prevent="add">
+                <input v-model="petrol" placeholder="A-95" required>
+                <input v-model.number="price" placeholder="$" required pattern="^[0-9]+$">
+                <input v-model.number="amount" placeholder="litres, e.g. 100" required pattern="^[0-9]+$">
+                <input type="submit" value="Add">
+                <button @click="close()">Close</button>
+                </form>
+                <p v-show="error">{{error}}</p>
+            </div>
+        </div>
+    `
+});
 Vue.component('new_station_popup', {
     data: function() {
         return {
@@ -209,6 +270,157 @@ Vue.component('new_station_popup', {
     `
 });
 
+Vue.component('refill_popup', {
+    props: {
+        driver: { default: () => {} },
+        car: { default: () => {} },
+        stations: {default: () => []}
+    },
+    data: function() {
+        console.log("refill Data function called");
+        return {
+            stationId: '',
+            petrol: {},
+            amount: '',
+            error: ''
+        }
+    },
+    computed: {
+        petrols: function() {
+            var res = [];
+            for (var i = 0; i < this.stations.length; ++i) {
+                var station = this.stations[i];
+                if (station.Id == this.stationId) {
+                    res = station.Reserve;
+                }
+            }
+            return res;
+        }
+    },
+    methods: {
+        close: function() {
+            this.stationId = '';
+            this.petrol = {};
+            this.amount = '';
+            window.data.RefillPopup = false;
+        },
+        add: function() {
+            var self = this;
+            this.error = '';
+            if (this.amount < 0.) {
+                this.error = 'Amount value should be greater than zero';
+                return false;
+            }
+            if (this.amount > this.petrol.Volume) {
+                this.error = 'Amount value should not exceed station volume';
+                return false;
+            }
+            if (this.car.Fullness + this.amount > this.car.TankVolume) {
+                this.error = 'Amount value should not exceed car tank volume';
+                return false;
+            }
+            if (this.amount * this.petrol.Price > this.driver.Balance) {
+                this.error = 'Not enough funds';
+                return false;
+            }
+
+            window.client.refill(this.driver.Id, this.car,
+                this.stationId, this.petrol, this.amount)
+                .then(resp => {
+                    if (resp.status != 200) {
+                        console.log(resp);
+                        throw 'Failed to refill car';
+                    } else {
+                        window.client.reloadGasStations();
+                        window.client.reloadDrivers();
+                    }
+                })
+                .catch(e => {
+                    window.data.Error = e
+                })
+                .then(() => {
+                    self.close()
+                })
+            return false;
+        }
+    },
+    template: `
+        <div class="fullscreen_popup">
+            <div class="fullscreen_popup_content">
+                <p>Refill {{driver.Name}}: {{car.PlateNumber}} {{car.Model}}</p>
+                <form v-on:submit.prevent="add">
+                <select v-model:value="stationId" required>
+                    <option v-for="{Id, Name} in stations" :value="Id"> {{Name}}</option>
+                </select>
+                <select v-model:value="petrol" required>
+                    <option v-for="({Name, Price, Volume}, idx) in petrols"
+                        :value="petrols[idx]">{{Name}} - {{Price}}$ - Available: {{Volume}}</option>
+                </select>
+                <input v-model.number="amount" placeholder="litres, e.g. 100" required pattern="^[0-9]+$">
+                <input type="submit" value="Add">
+                <button @click="close()">Close</button>
+                </form>
+                <p v-show="error">{{error}}</p>
+            </div>
+        </div>
+    `
+});
+
+Vue.component('spending_popup', {
+    props: ["driver", "car"],
+    data: function() {
+        return {
+            amount: '',
+            error: ''
+        }
+    },
+    methods: {
+        close: function() {
+            this.amount = '';
+            window.data.SpendingPopup = false;
+        },
+        add: function() {
+            var self = this;
+            this.error = '';
+            if (this.amount > this.car.Fullness) {
+                this.error = 'Amount value should not exceed amount in car tank';
+                return false;
+            }
+            window.client.spend(this.driver.Id, this.car, this.amount)
+                .then(resp => {
+                    if (resp.status != 200) {
+                        console.log(resp);
+                        throw 'Failed to refill car';
+                    } else {
+                        window.client.reloadGasStations();
+                        window.client.reloadDrivers();
+                    }
+                })
+                .catch(e => {
+                    window.data.Error = e
+                })
+                .then(() => {
+                    self.close()
+                })
+            return false;
+        }
+    },
+    template: `
+        <div class="fullscreen_popup">
+            <div class="fullscreen_popup_content">
+                <p>Refill {{driver.Name}}: {{car.PlateNumber}} {{car.Model}} {{car.Fullness}} litres</p>
+                <form v-on:submit.prevent="add">
+                    <input v-model.number="amount" placeholder="litres, e.g. 100" required pattern="^[0-9]+$">
+                    <input type="submit" value="Add">
+                    <button @click="close()">Close</button>
+                </form>
+                <p v-show="error">{{error}}</p>
+            </div>
+        </div>
+    `
+});
+
+
 
 
 var app = new Vue({
@@ -243,8 +455,56 @@ var app = new Vue({
                 }
             });
         },
+        showStationReplenishPopup: function(driverId) {
+            var self = this;
+            this.GasStations.forEach(function(el) {
+                if (el.Id == driverId) {
+                    self.StationReplenishPopup = el;
+                }
+            });
+        },
+        showRefillPopup: function(driver, car) {
+            this.RefillPopup = {
+                driver: driver,
+                car: car
+            };
+        },
+        showSpendingPopup: function(driver, car) {
+            this.SpendingPopup = {
+                driver: driver,
+                car: car
+            };
+        },
         clearError: function() {
             this.Error = '';
+        },
+        deleteDriver: function(driverId) {
+            window.client.deleteDriver(driverId)
+                .then(resp => {
+                    if (resp.status != 200) {
+                        console.log(resp);
+                        throw 'Failed to delete driver';
+                    } else {
+                        window.client.reloadDrivers();
+                    }
+                })
+                .catch(e => {
+                    window.data.Error = e
+                })
+        },
+        deleteStation: function(stationId) {
+            window.client.deleteStation(stationId)
+                .then(resp => {
+                    if (resp.status != 200) {
+                        console.log(resp);
+                        throw 'Failed to delete station';
+                    } else {
+                        window.client.reloadGasStations();
+                    }
+                })
+                .catch(e => {
+                    window.data.Error = e
+                })
         }
     },
     template: `
@@ -253,8 +513,8 @@ var app = new Vue({
         <p>Drivers</p><button @click="reloadDrivers()">Reload</button>
         <p v-if="DriversInProgress">Loading...</p>
         <ul>
-            <li v-for="{Id, Name, Balance, Cars} in Drivers" :key="Id">
-                <input :value="Id" disabled> {{Name}} {{Balance}}$
+            <li v-for="({Id, Name, Balance, Cars}, driverIdx) in Drivers" :key="Id">
+                <input :value="Id" disabled> {{Name}} {{Balance}}$ <button @click="deleteDriver(Id)">X</button>
                 <table>
                     <thead>
                         <th>Model</th>
@@ -262,14 +522,19 @@ var app = new Vue({
                         <th>Fullness</th>
                         <th>Refills</th>
                         <th>TankVolume</th>
+                        <th>Actions</th>
                     </thead>
                     <tbody>
-                        <tr v-for="{Model, PlateNumber, Fullness, Refills, TankVolume} in Cars">
+                        <tr v-for="({Model, PlateNumber, Fullness, Refills, TankVolume}, carIdx) in Cars">
                             <td>{{Model}}</td>
                             <td>{{PlateNumber}}</td>
                             <td>{{Fullness}}</td>
                             <td>{{Refills}}</td>
                             <td>{{TankVolume}}</td>
+                            <td>
+                                <button @click="showRefillPopup(Drivers[driverIdx], Cars[carIdx])">Refill</button>
+                                <button @click="showSpendingPopup(Drivers[driverIdx], Cars[carIdx])">Spend</button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -286,6 +551,7 @@ var app = new Vue({
         <ul>
             <li v-for="{Id, Name, Reserve} in GasStations" :key="Id">
                 <input :value="Id" disabled> {{Name}}
+                <button @click="deleteStation(Id)">X</button>
                 <table>
                     <thead>
                         <th>Name</th>
@@ -302,6 +568,7 @@ var app = new Vue({
                         </tr>
                     </tbody>
                 </table>
+                <button @click="showStationReplenishPopup(Id)">Replenish gas reserve</button>
             </li>
             <li>
                 <button @click="showStationPopup()">Add Station</button>
@@ -311,6 +578,9 @@ var app = new Vue({
         <new_station_popup v-show="NewStationPopup"></new_station_popup>
         <new_car_popup v-show="NewCarPopup" v-bind:driver="NewCarPopup"></new_car_popup>
         <balance_replenish_popup v-show="BalanceReplenishPopup" v-bind:driver="BalanceReplenishPopup"></balance_replenish_popup>
+        <station_replenish_popup v-show="StationReplenishPopup" v-bind:station="StationReplenishPopup"></station_replenish_popup>
+        <refill_popup v-if="RefillPopup" v-bind:stations="GasStations" v-bind:driver="RefillPopup.driver" v-bind:car="RefillPopup.car"></refill_popup>
+        <spending_popup v-if="SpendingPopup" v-bind:driver="SpendingPopup.driver" v-bind:car="SpendingPopup.car"></spending_popup>
     </div>
     `
 })

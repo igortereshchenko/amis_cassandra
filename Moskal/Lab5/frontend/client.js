@@ -9,6 +9,9 @@ var data = {
     NewCarPopup: false,
     BalanceReplenishPopup: false,
     NewStationPopup: false,
+    StationReplenishPopup: false,
+    RefillPopup: false,
+    SpendingPopup: false,
 };
 
 function Client(apiURL, data) {
@@ -104,6 +107,82 @@ Client.prototype.registerStation = function(name) {
         },
         method:'POST',
         body: JSON.stringify({Name: name})
+    });
+}
+Client.prototype.replenishGas = function(stationId, petrol, price, amount) {
+    var self = this;
+    return fetch(self.baseUrl + 'gas', {
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        method:'POST',
+        body: JSON.stringify({
+            StationId: stationId,
+            Petrol: {
+                Name: petrol,
+                Price: price
+            },
+            Amount: amount
+        })
+    });
+}
+Client.prototype.refill = function(driverId, car, stationId, petrol, amount) {
+    var self = this;
+    return fetch(self.baseUrl + 'refill', {
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        method:'POST',
+        body: JSON.stringify({
+            DriverId: driverId,
+            Car: car,
+            StationId: stationId,
+            Petrol: petrol,
+            Amount: amount
+        })
+    });
+}
+Client.prototype.spend = function(driverId, car, amount) {
+    var self = this;
+    return fetch(self.baseUrl + 'spend', {
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        method:'POST',
+        body: JSON.stringify({
+            DriverId: driverId,
+            Car: car,
+            Amount: amount
+        })
+    });
+}
+Client.prototype.deleteDriver = function(driverId) {
+    var self = this;
+    return fetch(self.baseUrl + 'driver', {
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        method:'DELETE',
+        body: JSON.stringify({
+            DriverId: driverId,
+        })
+    });
+}
+Client.prototype.deleteStation = function(stationId) {
+    var self = this;
+    return fetch(self.baseUrl + 'station', {
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        method:'DELETE',
+        body: JSON.stringify({
+            StationId: stationId,
+        })
     });
 }
 var client = new Client(window.location.protocol + '//' + window.location.host + '/api/', data)
