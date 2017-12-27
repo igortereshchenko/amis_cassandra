@@ -1,0 +1,3 @@
+CASSANDRA_DATE_FORMAT = '%Y-%m-%d'
+QT_DATE_FORMAT = '%m/%d/%y'
+QT_DATE_FROM_STRING = 'yyyy-MM-dd'
