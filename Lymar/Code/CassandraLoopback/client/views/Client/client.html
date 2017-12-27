@@ -1,0 +1,110 @@
+<div class="client" ng-controller="client">
+  <div class="col-md-12">
+    <div class="col-md-3 user-form" >
+      <div class="" align="center">
+        Create User
+      </div>
+      <form class="col-md-12" ng-submit="create(name, middlename, lastname)">
+        <div class="input-group">
+          <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+          <input type="text" class="form-control" placeholder="Name" ng-model="name">
+        </div>
+        <div class="input-group">
+          <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+          <input type="text" class="form-control" placeholder="Middlename" ng-model="middlename">
+        </div>
+        <div class="input-group">
+          <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+          <input type="text" class="form-control" placeholder="Lastname" ng-model="lastname">
+        </div>
+        <div class="login-submit">
+          <button type="submit" class="btn btn-success"> Create new user </button>
+        </div>
+      </form>
+    </div>
+    <div class="col-md-6">
+      <div class="col-md-12">
+        <div class="col-md-12" align="center">
+          <span>All users</span>
+        </div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Name</th>
+              <th>SecName</th>
+              <th>LastName</th>
+              <th>Balance</th>
+              <th><span>Delete Action</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="user in users"
+                ng-click="select(user, $event)"
+                ng-class="{'selected': selectedId === user.user_id}">
+              <td>{{user.user_id}}</td>
+              <td>{{user.fio.firstname}}</td>
+              <td>{{user.fio.middlename}}</td>
+              <td>{{user.fio.lastname}}</td>
+              <td>{{user.balance}}</td>
+              <td>
+                <button type="button" class="btn actions btn-danger" name="button" ng-click="delete(user, $event)">
+                  <i class="fa fa-trash-o fa-2x"  aria-hidden="true"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="col-md-12 user-form">
+        <div class="col-md-12" align="center">
+          <span> Update User</span>
+        </div>
+        <form class="col-md-12" ng-submit="updateUser(update)" >
+          <div class="input-group">
+            <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+            <input type="text" class="form-control" placeholder="Name" ng-model="update.name">
+          </div>
+          <div class="input-group">
+            <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+            <input type="text" class="form-control" placeholder="Middlename" ng-model="update.middlename">
+          </div>
+          <div class="input-group">
+            <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+            <input type="text" class="form-control"placeholder="Lastname" ng-model="update.lastname">
+          </div>
+          <div class="input-group">
+            <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+            <input type="text" class="form-control" placeholder="Balance" ng-model="update.balance">
+          </div>
+          <div class="login-submit">
+            <button type="submit" class="btn btn-success"> Update user </button>
+          </div>
+        </form>
+      </div>
+      <div class="col-md-12 user-form top30">
+        <div class="col-md-12" align="center">
+          <span> Count banks where user take a credit </span>
+        </div>
+        <form class="col-md-12" ng-submit="showCountedBanks(update)" >
+          <div class="form-group">
+            <label for="user">Select user from table</label>
+            <div class="input-group">
+              <input type="text" disabled ng-model="update.lastname">
+            </div>
+            <label for="user">Counted banks</label>
+            <div class="input-group">
+              <input type="text" disabled ng-model="countedBanks">
+            </div>
+          </div>
+          <div class="login-submit">
+            <button type="submit" class="btn btn-success"> Show count </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div ui-view></div>

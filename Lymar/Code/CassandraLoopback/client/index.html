@@ -1,0 +1,59 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="vendor/bootstrap/dist/css/bootstrap-theme.css">
+    <link rel="stylesheet" href="vendor/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="vendor/bootstrap-select/dist/css/bootstrap-select.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/default.css">
+    <link rel="stylesheet" href="css/Loan/credit.css">
+    <link rel="stylesheet" href="css/Client/client.css">
+    <link rel="stylesheet" href="css/Bank/bank.css">
+    <link rel="stylesheet" href="css/WishList/wishlist.css">
+    <link rel="stylesheet" href="vendor/font-awesome/css/font-awesome.css">
+    <script src="vendor/jquery/dist/jquery.min.js"> </script>
+    <script src="vendor/angular/angular.min.js"> </script>
+    <script src="vendor/angular-resource/angular-resource.min.js"> </script>
+    <script src="vendor/angular-ui-router/release/angular-ui-router.min.js"> </script>
+  </head>
+  <body ng-app="cassandra">
+    <header>
+      <nav class="navbar row" role="navigation">
+        <div class="navbar-header col-xs-6">
+          <a class="navbar-brand brand " ui-sref="#">Cassandra</a>
+        </div>
+        <div class="navbar-header col-xs-6">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#mainNavbar" style="background-color:black">
+            <span class="icon-bar" style="background-color:white"></span>
+            <span class="icon-bar" style="background-color:white"></span>
+            <span class="icon-bar" style="background-color:white"></span>
+          </button>
+      </div>
+        <ul class="nav navbar-nav pull-right menu collapse navbar-collapse " id="mainNavbar">
+          <li><a ui-sref="client">User</a></li>
+          <li><a ui-sref="bank">Bank</a></li>
+          <li><a ui-sref="loan">Credit</a></li>
+          <li><a ui-sref="wishlist">Wish List</a></li>
+          <li><a ui-sref="usercredit">Loan</a></li>
+        </ul>
+      </nav>
+    </header>
+    <hr>
+    <div class="container-fluid">
+      <div ui-view></div>
+    </div>
+    <script src="vendor/underscore/underscore-min.js"> </script>
+    <script src="vendor/backbone/backbone.js"> </script>
+    <script src="vendor/bootstrap/dist/js/bootstrap.js"> </script>
+    <script src="vendor/bootstrap-select/dist/js/bootstrap-select.min.js"> </script>
+    <script src="vendor/bootstrap-select/dist/js/i18n/defaults-en_US.min.js"> </script>
+    <script src="js/services/lb-services.js"></script>
+    <script src="vendor/angular-filter/dist/angular-filter.min.js"></script>
+    <script src="vendor/angular-cookies/angular-cookies.min.js"></script>
+    <script src="js/app.js"> </script>
+    <script src="js/controllers/Loan/credit.js"> </script>
+    <script src="js/controllers/Client/client.js"> </script>
+    <script src="js/controllers/Bank/bank.js"> </script>
+    <script src="js/controllers/WishList/wishlist.js"> </script>
+    <script src="js/controllers/UserCredit/usercredit.js"> </script>
+  </body>
+</html>

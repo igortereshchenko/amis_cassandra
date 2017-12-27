@@ -1,0 +1,32 @@
+{
+  "_meta": {
+    "sources": [
+      "loopback/common/models",
+      "loopback/server/models",
+      "../common/models",
+      "./models"
+    ],
+    "mixins": [
+      "loopback/common/mixins",
+      "loopback/server/mixins",
+      "../common/mixins",
+      "./mixins"
+    ]
+  },
+  "Client": {
+    "dataSource": null,
+    "public": true
+  },
+  "Credit": {
+    "dataSource": null,
+    "public": true
+  },
+  "Bank": {
+    "dataSource": null,
+    "public": true
+  },
+  "BankOperation": {
+    "dataSource": null,
+    "public": true
+  }
+}

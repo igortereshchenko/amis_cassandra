@@ -1,0 +1,92 @@
+<div class="loan" ng-controller="loan">
+  <div class="col-md-12">
+    <div class="col-md-3">
+      <div class="col-md-12 user-form" >
+        <div class="" align="center">
+          Create Credit
+        </div>
+        <form class="col-md-12" ng-submit="create(percent, term, debt)">
+          <div class="input-group">
+            <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+            <input type="text" class="form-control" placeholder="Percent" ng-model="percent">
+          </div>
+          <div class="input-group">
+            <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+            <input type="text" class="form-control" placeholder="Term" ng-model="term">
+          </div>
+          <div class="input-group">
+            <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+            <input type="text" class="form-control" placeholder="Debit" ng-model="debt">
+          </div>
+          <div class="login-submit">
+            <button type="submit" class="btn btn-success"> Create new credit </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="col-md-12">
+        <div class="" align="center">
+          <span>All credits</span>
+        </div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Percent</th>
+              <th>Term</th>
+              <th>Debit</th>
+              <th><span>Delete Action</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="credit in credits"
+                ng-click="select(credit, $event)"
+                ng-class="{'selected': selectedId === credit.credit_id}">
+              <td>{{credit.credit_id}}</td>
+              <td>{{credit.percent}} %</td>
+              <td>{{credit.term}} year</td>
+              <td>{{credit.debt}} $</td>
+              <td>
+                <button type="button" class="btn actions btn-danger" name="button" ng-click="delete(credit, $event)">
+                  <i class="fa fa-trash-o fa-2x"  aria-hidden="true"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="col-md-12 user-form" >
+        <div class="" align="center">
+          <span>Update Credit</span>
+        </div>
+        <form class="col-md-12" ng-submit="updateCredit(update)" >
+          <div class="form-group">
+            <div class="input-group">
+              <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+              <input type="text" class="form-control" placeholder="Percent" ng-model="update.percent">
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="input-group">
+              <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+              <input type="text" class="form-control" placeholder="Term" ng-model="update.term">
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="input-group">
+              <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+              <input type="text" class="form-control" placeholder="Debit" ng-model="update.debt">
+            </div>
+          </div>
+          <div class="login-submit">
+            <button type="submit" class="btn btn-success"> Update credit </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div ui-view></div>

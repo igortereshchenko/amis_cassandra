@@ -1,0 +1,72 @@
+<div class="wishlist" ng-controller="wishlist">
+    <div class="col-md-12">
+      <div class="col-md-3">
+        <div class="col-md-12 user-form">
+          <div class="" align="center">
+            Create Wish List
+          </div>
+          <form class="col-md-12" ng-submit="createWishList(selectedBankOp, selectedCredit, selectedUser)">
+            <div class="form-group" align="center">
+              <label for="user">Select bank</label>
+              <div class="input-group">
+                <select ng-model="selectedBankOp" ng-options="bank.bank_name for bank in banks" ng-change="selectedBank(selectedBankOp)">
+                </select>
+              </div>
+            </div>
+            <div class="form-group" align="center">
+              <label for="user">Select credit</label>
+              <div class="input-group">
+                <select ng-model="selectedCredit" ng-options="credit.debt for credit in credits">
+                </select>
+              </div>
+            </div>
+            <div class="form-group" align="center">
+              <label for="user">Select user</label>
+              <div class="input-group">
+                <select ng-model="selectedUser" ng-options="user for user in users">
+                </select>
+              </div>
+            </div>
+            <div class="login-submit">
+              <button type="submit" class="btn btn-success"> Create new wish list </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="col-md-9">
+        <div class="col-md-12">
+          <div class="" align="center">
+            All wished credits
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>BankOpId</th>
+                <th>BankId</th>
+                <th>CrediId</th>
+                <th>UserId</th>
+                <th>Date</th>
+                <th><span>Delete Action</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="bank in bankWishedListed"
+                  ng-click="select(bank, $event)"
+                  ng-class="{'selected': selectedWishListItem === bank.bank_operation_id}">
+                <td>{{bank.bank_operation_id}}</td>
+                <td>{{bank.bank_id}}</td>
+                <td>{{bank.credit_id}}</td>
+                <td>{{bank.user_id}}</td>
+                <td>{{bank.operation_date}}</td>
+                <td>
+                  <button type="button" class="btn actions btn-danger" name="button" ng-click="delete(bank, $event)">
+                    <i class="fa fa-trash-o fa-2x"  aria-hidden="true"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+  </div>
+  <div ui-view></div>
