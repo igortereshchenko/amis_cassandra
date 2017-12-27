@@ -1,0 +1,189 @@
+Списки у Cassandra.
+-	Створення.
+-	Модифікування: додавання, зміна, видалення.
+-	Область застосування та приклади.
+-	Використання у частині where
+
+Створення поля типу list: field_name List<type>;
+Додавання: 				INSERT INTO "Table" (field_name)
+						VALUES ( [ ' value1','value2','value3' ] );
+ 		
+						INSERT INTO "Table" 
+						JSON '{ "field_name" : ["value1","value2","value3"]  }';
+						
+Зміна всього списку:    UPDATE "Table"
+					  SET field_name =  ['value1']
+					  WHERE (condition);
+  
+Зміна елемента списку:  UPDATE "Table"
+					  SET field_name[1] = 'a'
+					  WHERE (condition);  
+					  
+Додавання елементу в список (не ідемпотентна операція, не рекомендується):
+						UPDATE "Table"
+						  SET field_name = field_name+  ['a','bbb']
+						  WHERE (condition);
+						  
+Видалення всіх елементів списку зі зніченням 'a':     
+						UPDATE "Table"
+						  SET field_name = field_name -  ['a']
+						  WHERE (condition);
+
+Видалення елементу списку за ідексом: 
+						DELETE field_name[1] FROM "Table"
+						  WHERE (condition);
+
+Видалення всіх елементів списку: 
+						UPDATE "Table"
+						  SET field_name = []
+						  WHERE (condition);
+
+						DELETE field_name FROM "Table" WHERE (condition);
+						
+Використовується для збереження однотипних значень, де важливий порядок та/або є необхідність зберігати одне і те саме значення кілька разів: список робочих місць, відвіданих країн...
+Для пошуку за лістом, необхідно створити індекси по ньому і тоді використовувати contains. Пошук по кількох значеннях не рекомендується, використовується ALLOW FILTERING.
+CREATE INDEX name ON "Table" (field_name);
+
+SELECT JSON field FROM "Table" 
+	WHERE 
+		field_name CONTAINS 'value1' ;
+
+Мапи у Cassandra.
+-	Створення.
+-	Модифікування: додавання, зміна, видалення.
+-	Область застосування та приклади.
+-	Використання у частині where
+
+Створення поля типу map: field_name map<type,type>;
+Додавання: 				INSERT INTO "Table" (field_name)
+						VALUES ( { 'key1'  : 'value1',
+								'key2' : 'value2' } );
+ 		
+						INSERT INTO "Table" 
+						JSON '{ "field_name" : { "key1"  : "value1",
+ 					   				  "key2" : "value2" }  }';
+						
+Зміна всієї мапи:    UPDATE "Table"
+					  SET field_name =  {'a':'b', 'c':'d'}
+					  WHERE (condition);
+  
+Зміна елемента мапи:  UPDATE "Table"
+					  SET field_name['a'] = 'bbb'
+					  WHERE (condition);  
+					  
+Додавання елементу в мапу:
+						UPDATE "Table"
+						  SET field_name = field_name+  {'key3' : 'value3', 'key4' : 'value4'}
+						  WHERE (condition);
+Видалення елементу мапи за ключем:     
+						UPDATE "Table"
+						  SET field_name = field_name -  {'key1'}
+						  WHERE (condition);
+
+						  DELETE field_name['key1'] FROM "Table"  WHERE (condition);
+						  
+Доступ до елементу здійснюється через його ключ, наприклад: тел. домашній, мобільний, робочий..; ссилки на соціальні мережі: вк, фейсбук, інстаграм...
+Пошуку за мапою можливий за її ключем або значенням, відповідно необхідно створити індекси по ключу або значенню ньому і тоді використовувати contains keys або contains. Пошук по кількох значеннях або ключах не рекомендується, використовується ALLOW FILTERING.
+CREATE INDEX name ON "Table" (field_name);
+SELECT field FROM "Table" WHERE field_name CONTAINS 'value1'; 
+
+DROP INDEX IF EXISTS name;
+CREATE INDEX name_key ON "Table" (KEYS(field_name));
+SELECT field FROM "Table" WHERE field_name CONTAINS KEY 'key1';
+
+Індекси на ключі і значення мапи не можуть існувати одночасно.
+
+
+Множини у Cassandra.
+-	Створення.
+-	Модифікування: додавання, зміна, видалення.
+-	Область застосування та приклади.
+-	Використання у частині where
+
+Створення поля типу set: field_name set<type>;
+Додавання: 				INSERT INTO "Table" (field_name)
+						VALUES ( { ' value1','value2','value3' } );
+ 		
+						INSERT INTO "Table" 
+						JSON '{ "field_name" : ["value1","value2","value3"]  }';
+						
+Зміна всього сету:    UPDATE "Table"
+					  SET field_name = {'value1'}
+					  WHERE (condition);
+  
+Зміна елемента сету здіснюється через видалення і додавання нового елементу
+						BEGIN BATCH
+							UPDATE "Table"
+							  SET field_name = field_name -  {'value1'}
+							  WHERE (condition);
+							  
+							UPDATE "Table"
+							  SET field_name = field_name + {'value2'}
+							  WHERE (condition);  
+						APPLY BATCH; 
+					  
+Додавання елементу в сет:
+							UPDATE "Table"
+							  SET field_name = field_name + {'value99'}
+							  WHERE (condition); 
+
+Видалення елементу сету за значенням: 
+							UPDATE "Table"
+							  SET field_name = field_name -  {'value99'}
+							  WHERE (condition);
+
+Видалення всіх елементів сету: 
+						UPDATE "Table"
+						  SET field_name = {}
+						  WHERE (condition);
+
+						DELETE field_name FROM "Table" WHERE (condition);
+						
+Використовується для збереження однотипних елементів, коли не важливий їх порядок і не дозволяється їх повторення. Наприклад номери телефонів, електронні пошти...
+Для пошуку за сетом, необхідно створити індекси по ньому і тоді використовувати contains. Пошук по кількох значеннях не рекомендується, використовується ALLOW FILTERING.
+CREATE INDEX name ON "Table" (field_name);
+
+SELECT JSON field FROM "Table" 
+	WHERE 
+		field_name CONTAINS 'value1' ;
+						
+Відмінність між списками  множинами та мапами. Рекомендації, коли що застосовувати.
+Мапа-набір ключ-значення довільних типів, доступ до елемента через ключ. Ліст-мапа, в якій ключем є індекс значення (починається з 0), доступ через індекс. Сет-мапа, де ключ=значення, доступ по значенню.
+Мапа не дозволяє збереження елементів з однаковим ключем, сет не дозволяє поторення елементів і не зберігає їх порядок, в лісті елементи можуть повторюватись і їх порядок зберігається.
+Ліст використовується для збереження однотипних значень, де важливий порядок та/або є необхідність зберігати одне і те саме значення кілька разів.
+Сет використовується для збереження однотипних елементів, коли не важливий їх порядок і не дозволяється їх повторення.
+
+Користувацький тим даних. 
+-	Створення та видалення.
+-	Відмінність від мапи. 
+-	Рекомендації, коли застосовувати.
+-	Використання у частині where
+
+Створення користувацького типу: CREATE TYPE IF NOT EXISTS user_type(
+									field1 type1,
+									field2 type2,
+									field3 type3
+								);
+Видалення: DROP TYPE IF EXISTS user_type;
+Тоді в таблиці поле користувацького типу визначається: 	field_name frozen<user_type>
+При вставці значень використовується формат { "field1": 'value1', "field2": 'value2'}, для json формату { "field1": "value1", "field2": "value2"}
+Доступ до поля користувацюкого типу SELECT JSON user_type.field1 FROM "Table";
+Для апдейту користувацькоо типу портрібно вказувати всі його поля.
+Користувацький тип використовується тоді, коли кілька полів можна об'эднати в одне значення і зберігати його в одній колонці.
+Відмінність від мапи в тому, що користувацьки тип може містити поля різних типів, в тому числі і складних - сети, лісти, мапи.
+Створений один раз користувацький тип може потым використовуватись довыльну кылькысть разыв в рызних колонках.
+Для пошуку за користувацьким типом, по ньому потрібно створити індекси, а потім в частині where вказати всі його поля:
+CREATE INDEX on "Table" (user_type);
+SELECT JSON * FROM "Table"
+WHERE user_type ={
+	  				field1:'value1',
+	  				field2:'value2',
+	  				field3:'value3',
+  			  	};  
+  			  	
+Frozen тип.
+-	Визначення.
+-	Використання у частині where
+Frozen тип визначає декілька компонент як одне значення.
+Якщо сет, ліст, мапи чи користувацький тип визначені як Frozen, це значить, що неможливо перевизначити тільки одне поле, потрібно перевизначати всю структуру.
+Не frozen структура не може бути PK, а також не може бути вкладеною в іншу складну структуру.
