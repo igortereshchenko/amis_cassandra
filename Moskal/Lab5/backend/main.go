@@ -15,9 +15,12 @@ func main() {
 
 	flag.StringVar(&staticPath, "ui", staticPath, "Change path to directory with frontend")
 	flag.StringVar(&address, "bind", address, "Change the address to bind on")
+	var cassAddress = flag.String("cass_address", "127.0.0.1", "Specify cass address")
+	var cassKeyspace = flag.String("cass_keyspace", "moskal", "Specify cass keyspace")
+
 	flag.Parse()
 
-	session, err := ConnectToCass("127.0.0.1", "moskal")
+	session, err := ConnectToCass(*cassAddress, *cassKeyspace)
 	if err != nil {
 		log.Fatal(err)
 	}

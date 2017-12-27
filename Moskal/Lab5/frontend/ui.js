@@ -39,9 +39,11 @@ Vue.component('new_driver_popup', {
         <div class="fullscreen_popup">
             <div class="fullscreen_popup_content">
                 <p>New driver</p>
-                <input v-model="name" placeholder="Name">
-                <button @click="register()">Add</button>
-                <button @click="close()">Close</button>
+                <form v-on:submit.prevent="register()">
+                    <input v-model="name" placeholder="Name">
+                    <input type="submit" value="Add">
+                    <button @click="close()">Close</button>
+                </form>
                 <p v-show="error">{{error}}</p>
             </div>
         </div>
