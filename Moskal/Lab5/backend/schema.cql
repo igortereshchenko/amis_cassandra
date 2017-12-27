@@ -81,20 +81,20 @@ AS $$
    }
    if (petrol != null) {
        if(state.containsKey(petrol)) {
-         state.put(petrol,  (float)state.get(petrol) + turnover); 
+         state.put(petrol,  (float)state.get(petrol) + turnover);
        } else {
          state.put(petrol, turnover);
        }
    }
 return state;
-$$; 
+$$;
 
 CREATE OR REPLACE AGGREGATE aggregateTurnover(petrol_type, float, float)
 SFUNC cumulateTurnover
 STYPE map<frozen<petrol_type>,float>
 INITCOND {};
 
-select aggregateTurnover(station_id, station_replenishment.volume, purchase.volume) from transactions; 
+select aggregateTurnover(station_id, station_replenishment.volume, purchase.volume) from transactions;
 
 CREATE OR REPLACE FUNCTION cumulateRefills(state map<frozen<Vehicle>,float>, vehicle Vehicle, volume float)
 RETURNS NULL ON NULL INPUT
