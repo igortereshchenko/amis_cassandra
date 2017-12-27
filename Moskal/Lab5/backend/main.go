@@ -31,7 +31,7 @@ func main() {
 		Handler: r,
 		Addr:    address,
 	}
-	log.Printf("Going to start listen socket. Visit http://%s/ui", srv.Addr)
+	log.Printf("Going to start listen socket. Visit http://%s/ui/", srv.Addr)
 	log.Fatal(srv.ListenAndServe())
 }
 
