@@ -1,0 +1,118 @@
+<div style="width: 100%; display: table;">
+    <div style="display: table-row">
+        <div style="width: 400px; display: table-cell;">
+            Create new user:
+            <form action="/api/create_user/" method="post">
+                {% csrf_token %}
+                <label for="balance">Balance: </label>
+                <input id="balance" type="text" name="balance">
+                <input type="submit" value="OK">
+            </form>
+            
+            <hr>
+            
+            {% for user in users %}
+                <form action="/api/update_user/{{user.user_id}}/" method="post">
+                    {% csrf_token %}
+                    ID: {{user.user_id}}
+                    <label for="balance">Balance: </label>
+                    <input id="balance" type="text" name="balance" value={{user.user_balance}}>
+                    <input type="submit" value="Save">
+                </form>
+                <br>
+            {% endfor %}
+        </div>
+        <div style="width: 10px; display: table-cell;"></div>
+        <div style="width: 400px; display: table-cell;">
+            Create new shop:
+            <form action="/api/create_shop/" method="post">
+                {% csrf_token %}
+                    <label for="id">ID: </label>
+                    <input id="id" type="text" name="id">
+                    <br>
+                    <label for="product_name">Product name: </label>
+                    <input id="product_name" type="text" name="product_name" value="milk">
+                    <br>
+                    <label for="product_value_type">Product value_type: </label>
+                    <input id="product_value_type" type="text" name="product_value_type" value="lt">
+                    <br>
+                    <label for="product_price">Product price: </label>
+                    <input id="product_price" type="text" name="product_price" value=3.0>
+                    <br>
+                <input type="submit" value="OK">
+            </form>
+             {% for shop in shops %}
+                <form action="/api/update_shop/{{shop.id}}/" method="post">
+                    {% csrf_token %}
+                    ID: {{shop.shop_id}}
+                    Product:{{shop.product_type.name}} {{shop.product_type.value_type}} {{shop.product_type.price}}
+                    <label for="got_product">Got product: </label>
+                    <input id="got_product" type="text" name="got_product" value=0>
+                    Has product: {{shop.has_product}}
+                    <label for="sold_product">Sold product: </label>
+                    <input id="sold_product" type="text" name="sold_product" value=0>
+                    <input type="submit" value="Save">
+                </form>
+                <br>
+            {% endfor %}
+            {{shop_sum}}
+        </div>
+        <div style="width: 10px; display: table-cell;"></div>
+        <div style="width: 400px; display: table-cell;">
+            Add to wish list:
+                <form action="/api/add_to_wish_list/" method="post">
+                    {% csrf_token %}
+                    <label for="user_id">User ID: </label>
+                    <input id="user_id" type="text" name="user_id">
+                    <br>
+                    <label for="shop_id">Shop ID: </label>
+                    <input id="shop_id" type="text" name="shop_id">
+                    <br>
+                    <label for="product_name">Product name: </label>
+                    <input id="product_name" type="text" name="product_name" value="milk">
+                    <br>
+                    <label for="product_value_type">Product value_type: </label>
+                    <input id="product_value_type" type="text" name="product_value_type" value="lt">
+                    <br>
+                    <label for="product_price">Product price: </label>
+                    <input id="product_price" type="text" name="product_price" value=3.0>
+                    <br>
+                    <label for="product_amount">Product amount: </label>
+                    <input id="product_amount" type="text" name="product_amount">
+                    <br>
+                    <input type="submit" value="Save">
+                </form>
+                <table>
+                    <tr>
+                        <th>user id</th>
+                        <th>shop id</th>
+                        <th> user wants</th>
+                        <th>user got</th>
+                        <th>submit</th>
+                    </tr>
+                    {% for order in orders %}
+                        <tr>
+                            <td>{{order.user_id}}</td>
+                            <td>{{order.shop_id}}</td>
+                            <td>{% for id, name in order.user_want_list.items %}
+                            
+                                {{ id }} : {{ name }}
+                            
+                                {% endfor %}
+                            </td>
+                            <td>{{order.user_got_list}}</td>
+                            <td>
+                                {% if order.user_got_list %}
+                                History
+                                {% else %}
+                                <form action="/api/sell/{{order.id}}/" method="post">
+                                    {% csrf_token %}
+                                    <input type="submit" value="sell">
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+        </div>
+    </div>
+</div>
