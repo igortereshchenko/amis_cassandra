@@ -1,0 +1,88 @@
+CREATE keyspace IF NOT EXISTS sergienko
+    WITH replication = {
+        'class': 'SimpleStrategy',
+        'replication_factor': 1
+    };
+
+use sergienko;
+
+CREATE TYPE IF NOT EXISTS "product"(
+    id int,
+    name text,
+    value_type text,
+    price double
+
+);
+
+CREATE TABLE user (
+    user_id int,
+    user_balance double,
+    primary key(user_id)
+);
+
+
+CREATE TABLE shop (
+    id int,
+    shop_id int,
+    descendant int,
+    product_type frozen<product>,
+    got_product double,
+    has_product double,
+    sold_product double,
+    primary key(shop_id)
+);
+
+CREATE TABLE user_order_list (
+    id int,
+    user_id int,
+    shop_id int,
+    user_want_list frozen<map<product, double>>,
+    user_got_list frozen<map<product, double>>,
+    primary key(id)
+);
+
+CREATE TABLE user_wish_list (
+    id int,
+    user_id int,
+    user_want_list frozen<map<product, double>>,
+    wish_date date,
+    primary key(id)
+);
+
+//add user
+INSERT INTO user (user_id, user_balance) VALUES(1, 100.00);
+
+//add wishes to wish_list
+INSERT INTO user_wish_list (id, user_id, user_want_list, wish_date) VALUES(1, 1, {(1, 'food', 'kg', 5.00):10}, '2017-12-01');
+INSERT INTO user_wish_list (id, user_id, user_want_list, wish_date) VALUES(2, 1, {(1, 'food', 'kg', 5.00):2}, '2017-12-02');
+
+//add goods to shop
+INSERT INTO shop (shop_id, id, descendant, product_type, got_product, has_product, sold_product) VALUES(1, 1, 2, (1, 'food', 'kg', 5.00), 5.0, 5.0, 0.0);
+
+INSERT INTO shop (shop_id, id, descendant, product_type, got_product, has_product, sold_product) VALUES(1, 2, 3, (1, 'food', 'kg', 5.00), 3.0, 8.0, 0.0);
+
+INSERT INTO shop (shop_id, id, descendant, product_type, got_product, has_product, sold_product) VALUES(1, 3, 4, (1, 'food', 'kg', 5.00), 0.0, 6.0, 2.0);
+
+INSERT INTO shop (shop_id, id, descendant, product_type, got_product, has_product, sold_product) VALUES(1, 4, 0, (1, 'food', 'kg', 5.00), 1.0, 5.0, 2.0);
+
+
+//make shopping
+CREATE INDEX descendant ON shop (descendant);
+SELECT id from shop where shop_id=1 and descendant = 0; //getting 4
+SELECT user_balance from user where user_id=1; //getting 100
+
+BEGIN BATCH
+
+INSERT INTO user_order_list (id, user_id, shop_id, user_want_list, user_got_list)
+VALUES (1, 1, 1, {(1, 'food', 'kg', 5.00): 3.0}, {(1, 'food', 'kg', 5.00): 3.0});
+
+UPDATE shop SET descendant = 5 where shop_id = 1 if id = 4;
+UPDATE user SET user_balance = 85 where user_id = 1 if user_balance = 100;
+
+INSERT INTO shop (shop_id, id, descendant, product_type, got_product, has_product, sold_product) VALUES(1, 5, null, (1, 'food', 'kg', 5.00), 0.0, 2.0, 3.0); //%ID% + 1 => 4 + 1 = 5
+  
+APPLY BATCH;
+
+select * from user_order_list;
+
+DROP KEYSPACE sergienko;
