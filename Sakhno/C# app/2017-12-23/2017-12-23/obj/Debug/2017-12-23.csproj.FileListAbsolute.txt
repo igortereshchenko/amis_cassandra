@@ -1,0 +1,15 @@
+D:\2017-12-23\2017-12-23\2017-12-23\bin\Debug\2017-12-23.exe.config
+D:\2017-12-23\2017-12-23\2017-12-23\obj\Debug\2017-12-23.csprojResolveAssemblyReference.cache
+D:\2017-12-23\2017-12-23\2017-12-23\obj\Debug\_2017_12_23.Form1.resources
+D:\2017-12-23\2017-12-23\2017-12-23\obj\Debug\_2017_12_23.Properties.Resources.resources
+D:\2017-12-23\2017-12-23\2017-12-23\obj\Debug\2017-12-23.csproj.GenerateResource.Cache
+D:\2017-12-23\2017-12-23\2017-12-23\bin\Debug\2017-12-23.exe
+D:\2017-12-23\2017-12-23\2017-12-23\bin\Debug\2017-12-23.pdb
+D:\2017-12-23\2017-12-23\2017-12-23\bin\Debug\Cassandra.dll
+D:\2017-12-23\2017-12-23\2017-12-23\bin\Debug\LZ4.dll
+D:\2017-12-23\2017-12-23\2017-12-23\bin\Debug\Cassandra.xml
+D:\2017-12-23\2017-12-23\2017-12-23\obj\Debug\2017-12-23.exe
+D:\2017-12-23\2017-12-23\2017-12-23\obj\Debug\2017-12-23.pdb
+D:\2017-12-23\2017-12-23\2017-12-23\obj\Debug\_2017_12_23.AddBuyer.resources
+D:\2017-12-23\2017-12-23\2017-12-23\obj\Debug\_2017_12_23.AddOrder.resources
+D:\2017-12-23\2017-12-23\2017-12-23\obj\Debug\_2017_12_23.Buyers_List.resources

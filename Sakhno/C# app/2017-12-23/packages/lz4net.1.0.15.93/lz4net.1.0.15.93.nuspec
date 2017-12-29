@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>lz4net</id>
+    <version>1.0.15.93</version>
+    <title>lz4net</title>
+    <authors>Milosz Krajewski</authors>
+    <owners>Milosz Krajewski</owners>
+    <licenseUrl>https://github.com/MiloszKrajewski/lz4net/blob/master/LICENSE.md</licenseUrl>
+    <projectUrl>https://github.com/MiloszKrajewski/lz4net</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/MiloszKrajewski/lz4net/master/doc/icon.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>LZ4 is lossless compression algorithm, sacrificing compression ratio for compression/decompression speed. Its compression speed is ~400 MB/s per core while decompression speed reaches ~2 GB/s, not far from RAM speed limits.
+
+LZ4net brings LZ4 to all (most?) .NET platforms: .NET 2.0+, .NET Core, Mono, Windows Phone, Xamarin.iOS, Xamarin.Android and Silverlight</description>
+    <summary>LZ4 - ultra fast compression algorithm - for all .NET platforms</summary>
+    <releaseNotes>2017-03-17
+- CHANGED: fixed issues with .NET Standard 1.0</releaseNotes>
+    <copyright>Milosz Krajewski</copyright>
+    <tags>lz4 lz4hc fast compression decompression zlib lzf lzo snappy quicklz</tags>
+    <dependencies>
+      <group targetFramework=".NETFramework2.0" />
+      <group targetFramework=".NETFramework4.0-Client" />
+      <group targetFramework=".NETPortable0.0-net40+win8+wpa81" />
+      <group targetFramework=".NETPortable0.0-net40+sl5+win8+wp8+wpa81" />
+      <group targetFramework="Unsupported0.0">
+        <dependency id="NETStandard.Library" version="1.6.1" />
+        <dependency id="lz4net.unsafe.netcore" version="[1.0.15.93]" />
+      </group>
+    </dependencies>
+    <references>
+      <reference file="LZ4.dll" />
+    </references>
+  </metadata>
+</package>

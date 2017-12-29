@@ -1,0 +1,72 @@
+drop table if exists varehouse;
+
+create table if not exists varehouse
+(
+	product_name text,
+	product_stock int,
+	product_price float,
+	product_lack int,
+	primary key (product_name)	
+);
+
+
+insert into varehouse json 
+'{
+	"product_name": "kartoshka",
+	"product_stock": 10,
+	"product_price": 59.99,
+	"product_lack": 0
+}';
+
+insert into varehouse json 
+'{
+	"product_name": "morkva",
+	"product_stock": 8,
+	"product_price": 39.99,
+	"product_lack": 0
+}';
+
+insert into varehouse json 
+'{
+	"product_name": "kabachok",
+	"product_stock": 12,
+	"product_price": 49.99,
+	"product_lack": 0
+}';
+//varehouse range
+select json * from varehouse;
+
+
+//user buy 10 kabachoks
+select json product_stock from varehouse where product_name='kabachok';
+update varehouse set product_stock=2, product_lack=0 where product_name='kabachok';
+select json * from varehouse where product_name='kabachok';
+
+//user buy 10 morkovkas
+select json product_stock from varehouse where product_name='morkva';
+update varehouse set product_stock=0, product_lack=2 where product_name='morkva';
+select json * from varehouse where product_name='morkva';
+
+//user buy 11 kartoshkas
+select json product_stock from varehouse where product_name='kartoshka';
+update varehouse set product_stock=0, product_lack=1 where product_name='kartoshka';
+select json * from varehouse where product_name='kartoshka';
+
+//list of products, which we shood to pre-order
+drop index if exists product_stock;
+create index product_stock on varehouse (product_stock);
+
+select json product_name, product_lack from varehouse where product_stock=0;
+
+
+//morkva replenish
+select json product_stock from varehouse where product_name='morkva';
+update varehouse set product_stock=12, product_lack=0 where product_name='morkva';
+select json * from varehouse where product_name='morkva';
+
+//list of products, which we shood to pre-order
+select json product_name, product_lack from varehouse where product_stock=0;
+
+//drop all
+drop table if exists varehouse;
+drop index if exists product_stock;
