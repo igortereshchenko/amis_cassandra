@@ -1,0 +1,86 @@
+/*
+Task:
+1. Create keyspace named as "test" with replication factor 5.
+2. Alter keyspace named as "test" with replication factor 2 using command ALTER.
+3. Create table which describes 1 to N relation "User_order". Each entity should have atleast 3 attributes in addition to key attributes.
+4. Populate table from step 3 with data.
+5. Update record to create example of nonconsistent data.
+6. Recreate table so attributes of main entity are marked with static keyword.
+7. Populate table from step 6 with data.
+8. Update record and check that data are still consistent.
+9. Drop created tables and keyspaces
+*/
+-- 1
+create keyspace if not exists "keyspacelab1" with replication = {'class':'SimpleStrategy', 'replication_factor': 5};
+-- 2
+alter keyspace "keyspacelab1" with replication = {'class':'SimpleStrategy', 'replication_factor': 2};
+
+use "keyspacelab1";
+-- 3
+create table if not exists user_bookTransaction(
+    user_id int,
+    user_first_name text,
+    user_last_name text,
+    shop_id int,
+    shop_name text,
+    book_id int,
+    book_title text,
+    book_author text,
+    book_price int,
+    PRIMARY KEY(user_id, shop_id, book_id)
+);
+
+-- 4
+insert into user_bookTransaction(user_id, user_first_name, user_last_name, shop_id, shop_name, book_id, book_author, book_title, book_price)
+values (1, 'Olha', 'Chortok', 1,'First shop', 1, 'First author', 'First title', 100);
+
+insert into user_bookTransaction(user_id, user_first_name, user_last_name, shop_id, shop_name, book_id, book_author, book_title, book_price)
+values (1, 'Olha', 'Chortok', 1,'First shop', 2, 'First author', 'Second title', 200);
+
+insert into user_bookTransaction(user_id, user_first_name, user_last_name, shop_id, shop_name, book_id, book_author, book_title, book_price)
+values (1, 'User2', 'User2', 2,'Second shop', 1, 'First author', 'First title', 100);
+
+select * from user_bookTransaction;
+
+-- 5
+update user_bookTransaction set user_last_name = 'Test last name' 
+where  user_id = 1 and shop_id = 1 and book_id  = 1;
+  
+select user_id, user_first_name, user_last_name from user_bookTransaction 
+where user_id = 1;
+
+-- 6
+drop table user_bookTransaction;
+
+create table if not exists user_bookTransaction(
+    user_Id int,
+    user_first_name text STATIC,
+    user_last_name text STATIC,
+    
+    shop_Id int,
+    shop_name text,
+    book_Id int,    
+    book_title text,
+    book_author text,
+    book_price int,        
+    
+    PRIMARY KEY(user_Id, shop_Id, book_Id)
+);
+-- 7
+insert into user_bookTransaction(user_id, user_first_name, user_last_name, shop_id, shop_name, book_id, book_author, book_title, book_price)
+values (1, 'Olha', 'Chortok', 1,'First shop', 1, 'First author', 'First title', 100);
+
+insert into user_bookTransaction(user_id, user_first_name, user_last_name, shop_id, shop_name, book_id, book_author, book_title, book_price)
+values (1, 'Olha', 'Chortok', 1,'First shop', 2, 'First author', 'Second title', 200);
+
+insert into user_bookTransaction(user_id, user_first_name, user_last_name, shop_id, shop_name, book_id, book_author, book_title, book_price)
+values (1, 'User2', 'User2', 2,'Second shop', 1, 'First author', 'First title', 100);
+-- 8
+update user_bookTransaction set user_last_name = 'Test last name' 
+where  user_id = 1 and shop_id = 1 and book_id  = 1;
+--9  
+select user_id, user_first_name, user_last_name from user_bookTransaction 
+where user_id = 1;
+
+drop table user_bookTransaction;
+drop keyspace "keyspacelab1";
